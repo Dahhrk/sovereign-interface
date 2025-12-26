@@ -16,12 +16,14 @@ if CAMI then
         MinAccess = "admin"
     })
     
-    -- Register all Sovereign roles with CAMI
-    for roleName, _ in pairs(Sovereign.Roles.Hierarchy) do
-        CAMI.RegisterUsergroup({
-            Name = roleName,
-            Inherits = Sovereign.Roles.Hierarchy[roleName].inherit or {}
-        }, "Sovereign")
+    -- Register all Sovereign roles with CAMI (check if roles exist first)
+    if Sovereign.Roles and Sovereign.Roles.Hierarchy then
+        for roleName, roleData in pairs(Sovereign.Roles.Hierarchy) do
+            CAMI.RegisterUsergroup({
+                Name = roleName,
+                Inherits = roleData.inherit or {}
+            }, "Sovereign")
+        end
     end
     
     -- Hook into CAMI's permission system

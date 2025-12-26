@@ -53,7 +53,7 @@ function Sovereign.EnableAdminMode(ply)
     end
     
     -- DarkRP job integration
-    if DarkRP and config.DarkRP and config.DarkRP.Enabled then
+    if DarkRP and config.DarkRP and config.DarkRP.Enabled and RPExtraTeams then
         previousStates[steamID].job = ply:getJobTable()
         previousStates[steamID].money = ply:getDarkRPVar("money")
         

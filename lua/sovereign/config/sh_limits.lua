@@ -88,8 +88,7 @@ if SERVER then
         local limits = Sovereign.Config.Limits.Groups[group]
         
         if limits and limits.props then
-            ply:SetCount("props", ply:GetCount("props") + 1)
-            if ply:GetCount("props") > limits.props then
+            if ply:GetCount("props") >= limits.props then
                 return false
             end
         end

@@ -121,20 +121,26 @@ echo "6. Checking Lua syntax..."
 LUA_FILES=$(find lua -name "*.lua")
 SYNTAX_ERRORS=0
 
-for file in $LUA_FILES; do
-    if luac -p "$file" 2>/dev/null; then
-        : # No output for successful checks
-    else
-        echo "  ✗ Syntax error in $file"
-        ((SYNTAX_ERRORS++))
-        ((ERRORS++))
-    fi
-done
+# Check if luac is available
+if command -v luac &> /dev/null; then
+    for file in $LUA_FILES; do
+        if luac -p "$file" 2>/dev/null; then
+            : # No output for successful checks
+        else
+            echo "  ✗ Syntax error in $file"
+            ((SYNTAX_ERRORS++))
+            ((ERRORS++))
+        fi
+    done
 
-if [ $SYNTAX_ERRORS -eq 0 ]; then
-    echo "  ✓ All Lua files have valid syntax"
+    if [ $SYNTAX_ERRORS -eq 0 ]; then
+        echo "  ✓ All Lua files have valid syntax"
+    else
+        echo "  ✗ $SYNTAX_ERRORS files have syntax errors"
+    fi
 else
-    echo "  ✗ $SYNTAX_ERRORS files have syntax errors"
+    echo "  ⚠ luac not found, skipping syntax check (install lua5.1 for syntax validation)"
+    ((WARNINGS++))
 fi
 
 echo ""

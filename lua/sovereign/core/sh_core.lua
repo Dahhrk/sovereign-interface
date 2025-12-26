@@ -106,9 +106,9 @@ function Sovereign.ExecuteCommand(ply, commandName, args)
         local cmdConfig = Sovereign.Config.Commands and Sovereign.Config.Commands[commandName]
         
         -- Check if command requires admin mode
-        if cmdConfig and cmdConfig.adminMode then
+        if cmdConfig and cmdConfig.adminMode and Sovereign.IsInAdminMode then
             -- Check if player is in admin mode
-            if not Sovereign.IsInAdminMode or not Sovereign.IsInAdminMode(ply) then
+            if not Sovereign.IsInAdminMode(ply) then
                 Sovereign.NotifyPlayer(ply, "You must enable Admin Mode to use this command. Use !adminmode to toggle.")
                 return
             end

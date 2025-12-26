@@ -388,3 +388,41 @@ Roles inherit permissions from lower roles (e.g., admin can use all mod commands
 4. Use `!return` after teleporting to go back to your original position
 5. Some commands work on yourself if no player is specified (e.g., `!noclip`)
 6. DarkRP commands only work when DarkRP is installed on the server
+
+---
+
+## Admin Mode Commands
+
+### adminmode
+**Usage:** `!adminmode`  
+**Permission:** superadmin, admin  
+**Description:** Toggle admin mode on/off. Switches to admin model, enables god mode, and adjusts stats.  
+**Example:** `!adminmode`
+
+**Note:** Can also be toggled with F2 key (configurable).
+
+---
+
+## Role Management Commands
+
+### addrole
+**Usage:** `!addrole <player> <role>`  
+**Permission:** superadmin  
+**Description:** Add a role to a player. Supports multi-role assignments.  
+**Available Roles:** superadmin, admin, mod, vip, trusted, user  
+**Example:** `!addrole John admin`
+
+### removerole
+**Usage:** `!removerole <player> <role>`  
+**Permission:** superadmin  
+**Description:** Remove a role from a player.  
+**Example:** `!removerole John admin`
+
+### listroles
+**Usage:** `!listroles [player]`  
+**Permission:** superadmin, admin  
+**Description:** List all available roles or view a player's assigned roles.  
+**Examples:**
+- `!listroles` - Shows available roles
+- `!listroles John` - Shows John's roles
+

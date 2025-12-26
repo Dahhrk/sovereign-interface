@@ -1,4 +1,4 @@
--- sh_config.lua - Configuration for Sovereign Admin System
+-- sh_config.lua - Main configuration for Sovereign Admin System
 
 Sovereign = Sovereign or {}
 Sovereign.Config = Sovereign.Config or {}
@@ -6,8 +6,8 @@ Sovereign.Config = Sovereign.Config or {}
 -- Command prefix
 Sovereign.Config.Prefix = "!"
 
--- Default authorized user groups
-Sovereign.Config.AuthorizedGroups = { "admin", "superadmin", "mod" }
+-- Default authorized user groups (only superadmin by default as per requirements)
+Sovereign.Config.AuthorizedGroups = { "superadmin" }
 
 -- Command cooldown (in seconds)
 Sovereign.Config.CommandCooldown = 0.5
@@ -40,5 +40,16 @@ Sovereign.Config.BanDurations = {
 
 -- Jail configuration
 Sovereign.Config.JailModel = "models/props_phx/construct/metal_plate1.mdl"
+
+-- Advert settings
+Sovereign.Config.Adverts = {
+    Enabled = true,
+    Interval = 300, -- seconds between adverts
+    Messages = {
+        "This server uses Sovereign Admin System!",
+        "Report rule breakers to admins using @ in chat.",
+        "Type !help for a list of available commands."
+    }
+}
 
 print("[Sovereign] Configuration loaded.")

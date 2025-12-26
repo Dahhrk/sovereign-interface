@@ -2,9 +2,18 @@
 
 This guide explains how to configure the Sovereign Admin System.
 
+## Configuration Files
+
+All configuration files are located in `lua/sovereign/config/`:
+- `sh_config.lua` - Main settings
+- `sh_adminmode.lua` - Admin mode configuration
+- `sh_limits.lua` - Sandbox spawn limits
+- `sh_localization.lua` - Multi-language support
+- `sh_roles.lua` - Role hierarchy and permissions
+
 ## Main Configuration File
 
-Edit `lua/sovereign/core/sh_config.lua` to customize the system.
+Edit `lua/sovereign/config/sh_config.lua` to customize the system.
 
 ### Command Prefix
 
@@ -17,10 +26,11 @@ Change this to any prefix you prefer (e.g., `/`, `.`, `#`).
 ### Authorized Groups
 
 ```lua
-Sovereign.Config.AuthorizedGroups = { "admin", "superadmin", "mod" }
+Sovereign.Config.AuthorizedGroups = { "superadmin" }
 ```
 
-List of usergroups that have access to admin commands.
+By default, only superadmin has access. Add additional groups as needed.
+Note: With the multi-role system, you can dynamically add roles using `!addrole` command.
 
 ### Command Cooldown
 
@@ -94,9 +104,49 @@ These are reference values. When using the `!ban` command, specify the duration 
 
 ## Role Configuration
 
-Edit `lua/sovereign/core/sh_roles.lua` to modify the role hierarchy.
+Edit `lua/sovereign/config/sh_roles.lua` to modify the role hierarchy.
 
 ### Default Role Hierarchy
+
+```lua
+Sovereign.Roles.Hierarchy = {
+    superadmin = {}  -- Superadmin only by default
+}
+```
+
+By default, only superadmin is included. Other roles must be added manually using commands.
+
+### Dynamic Role Management
+
+Use the following commands to manage roles at runtime:
+
+- `!addrole <player> <role>` - Add a role to a player
+- `!removerole <player> <role>` - Remove a role from a player
+- `!listroles [player]` - View available roles or player's roles
+
+### Available Roles
+
+```lua
+Sovereign.Roles.AvailableRoles = {
+    "superadmin",
+    "admin",
+    "mod",
+    "vip",
+    "trusted",
+    "user"
+}
+```
+
+### Multi-Role System
+
+Players can have multiple roles simultaneously:
+- Permissions aggregate across all assigned roles
+- Roles persist in the database across restarts
+- Check player roles with `!listroles <player>`
+
+### Adding Role Inheritance
+
+To add a role with inheritance to the hierarchy:
 
 ```lua
 Sovereign.Roles.Hierarchy = {
@@ -106,22 +156,6 @@ Sovereign.Roles.Hierarchy = {
     user = {}
 }
 ```
-
-### Adding a New Role
-
-To add a new role between admin and mod:
-
-```lua
-Sovereign.Roles.Hierarchy = {
-    superadmin = { inherit = { "admin" } },
-    admin = { inherit = { "trusted" } },  -- Changed
-    trusted = { inherit = { "mod" } },     -- New role
-    mod = { inherit = { "user" } },
-    user = {}
-}
-```
-
-Then update command permissions in the command files to include the new role.
 
 ### Modifying Command Permissions
 
@@ -270,3 +304,156 @@ include("sovereign/commands/sv_mycommands.lua")
 2. Use MySQL for larger servers or multi-server setups
 3. Adjust `CommandCooldown` to prevent command spam
 4. Regularly clean old logs from the database
+
+---
+
+## Admin Mode Configuration
+
+Edit `lua/sovereign/config/sh_adminmode.lua` to customize admin mode.
+
+### Enable/Disable Admin Mode
+
+```lua
+Sovereign.Config.AdminMode.Enabled = true
+```
+
+### Admin Model
+
+```lua
+Sovereign.Config.AdminMode.Model = "models/player/combine_super_soldier.mdl"
+```
+
+The model that players will use when in admin mode.
+
+### Admin Mode Stats
+
+```lua
+Sovereign.Config.AdminMode.GodMode = true
+Sovereign.Config.AdminMode.Health = 100
+Sovereign.Config.AdminMode.Armor = 100
+Sovereign.Config.AdminMode.Speed = 1.5      -- Walk speed multiplier
+Sovereign.Config.AdminMode.JumpPower = 1.5  -- Jump power multiplier
+```
+
+Configure the stats applied when entering admin mode.
+
+### Sounds
+
+```lua
+Sovereign.Config.AdminMode.Sounds = {
+    Enable = "buttons/button9.wav",      -- Sound when entering admin mode
+    Disable = "buttons/button10.wav"     -- Sound when leaving admin mode
+}
+```
+
+### DarkRP Integration
+
+```lua
+Sovereign.Config.AdminMode.DarkRP = {
+    Enabled = true,
+    AdminJobName = "Admin on Duty",  -- Job name for admin mode in DarkRP
+    RememberJob = true,               -- Remember player's previous job
+    RememberWeapons = true            -- Remember player's weapons
+}
+```
+
+### Key Bind
+
+```lua
+Sovereign.Config.AdminMode.ToggleKey = KEY_F2
+```
+
+Players with admin permissions can use this key to toggle admin mode. Set to `nil` to disable.
+
+---
+
+## Sandbox Limits Configuration
+
+Edit `lua/sovereign/config/sh_limits.lua` to customize spawn limits per usergroup.
+
+### Example Configuration
+
+```lua
+Sovereign.Config.Limits.Groups = {
+    ["user"] = {
+        props = 50,
+        ragdolls = 5,
+        vehicles = 2,
+        effects = 10,
+        -- ... more limits
+    },
+    ["superadmin"] = {
+        props = 500,
+        ragdolls = 50,
+        vehicles = 20,
+        effects = 100,
+        -- ... more limits
+    }
+}
+```
+
+### Available Limit Types
+
+- `props` - Maximum props spawnable
+- `ragdolls` - Maximum ragdolls
+- `vehicles` - Maximum vehicles
+- `effects` - Maximum effects
+- `balloons` - Maximum balloons
+- `emitters` - Maximum emitters
+- `npcs` - Maximum NPCs
+- `sentries` - Maximum sentries
+- `thrusters` - Maximum thrusters
+- `dynamite` - Maximum dynamite
+- `lamps` - Maximum lamps
+- `lights` - Maximum lights
+- `wheels` - Maximum wheels
+- `hoverballs` - Maximum hoverballs
+- `buttons` - Maximum buttons
+- `cameras` - Maximum cameras
+
+---
+
+## Multi-Language Configuration
+
+Edit `lua/sovereign/config/sh_localization.lua` to add language support.
+
+### Current Language
+
+```lua
+Sovereign.Config.Language.Current = "english"
+```
+
+### Adding a New Language
+
+```lua
+Sovereign.Config.Language.Strings["german"] = {
+    ["command_not_found"] = "Befehl nicht gefunden: %s",
+    ["no_permission"] = "Sie haben keine Berechtigung für diesen Befehl.",
+    -- Add more translations...
+}
+```
+
+Then set:
+
+```lua
+Sovereign.Config.Language.Current = "german"
+```
+
+---
+
+## Advert Configuration
+
+Configure server adverts in `lua/sovereign/config/sh_config.lua`:
+
+```lua
+Sovereign.Config.Adverts = {
+    Enabled = true,
+    Interval = 300, -- seconds between adverts
+    Messages = {
+        "This server uses Sovereign Admin System!",
+        "Report rule breakers to admins using @ in chat.",
+        "Type !help for a list of available commands."
+    }
+}
+```
+

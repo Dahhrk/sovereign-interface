@@ -84,12 +84,19 @@ A lightweight, modular, command-based admin system for Garry's Mod servers.
 
 ## Configuration
 
-Edit `lua/sovereign/core/sh_config.lua` to customize:
+Edit `lua/sovereign/config/sh_config.lua` to customize:
 - Command prefix (default: `!`)
 - Authorized user groups
 - Database settings (MySQL or SQLite)
 - Ban durations
 - Logging options
+- Advert messages and intervals
+
+Additional configuration files:
+- `sh_adminmode.lua` - Admin mode settings (model, sounds, stats)
+- `sh_limits.lua` - Sandbox spawn limits per usergroup
+- `sh_localization.lua` - Multi-language support
+- `sh_roles.lua` - Role hierarchy and permissions
 
 ## Folder Structure
 
@@ -99,12 +106,18 @@ lua/
 │   └── sovereign_loader.lua          # Main entry point
 └── sovereign/
     ├── sh_init.lua                    # Initialization script
+    ├── config/                        # Configuration files
+    │   ├── sh_config.lua              # Main settings
+    │   ├── sh_adminmode.lua           # Admin mode configuration
+    │   ├── sh_limits.lua              # Sandbox spawn limits
+    │   ├── sh_localization.lua        # Multi-language support
+    │   └── sh_roles.lua               # Role management
     ├── core/                          # Core system files
-    │   ├── sh_config.lua              # Configuration
     │   ├── sh_core.lua                # Core functionality
     │   ├── sh_helpers.lua             # Helper utilities
-    │   └── sh_roles.lua               # Role management
+    │   └── sh_compat.lua              # Compatibility layer
     ├── commands/                      # Command implementations
+    │   ├── sv_admin.lua               # Admin mode & role commands
     │   ├── sv_fun.lua                 # Fun commands
     │   ├── sv_moderation.lua          # Moderation commands
     │   ├── sv_teleport.lua            # Teleportation commands
@@ -119,13 +132,38 @@ lua/
             └── cl_theme_base.lua      # Theme definitions
 ```
 
+## Advanced Features
+
+### Admin Mode System
+Toggle admin mode with `!adminmode` or a configurable key bind (F2 by default):
+- Switches to configurable admin model
+- Enables god mode and adjusts stats
+- Plays sounds on activation/deactivation
+- Integrates with DarkRP job switching
+- Remembers previous state when toggling off
+
+### Multi-Role System
+Players can have unlimited roles with permission aggregation:
+- Use `!addrole <player> <role>` to add roles
+- Use `!removerole <player> <role>` to remove roles
+- Use `!listroles [player]` to view roles
+- Permissions aggregate across all assigned roles
+- Roles persist across server restarts
+
+### Compatibility
+- **CAMI Support**: Harmonizes with external admin mods
+- **bLogs/mLogs Integration**: All actions are automatically logged
+- **DarkRP Admin-Job Switching**: Smooth toggling between admin and player jobs
+- **UI-Ready Hooks**: Placeholders for future GUI integration
+
 ## Role System
 
-Sovereign uses a hierarchical role system with inheritance:
-- **superadmin** - Full access (inherits from admin)
-- **admin** - Most commands (inherits from mod)
-- **mod** - Basic moderation commands (inherits from user)
-- **user** - Standard player
+Sovereign uses a flexible role system with inheritance:
+- **superadmin** - Full access (only default role)
+- Additional roles can be added dynamically using `!addrole`
+- Supports custom roles: admin, mod, vip, trusted, user
+- Multi-role assignments per player
+- Role inheritance for permission aggregation
 
 ## Database
 
@@ -141,11 +179,10 @@ Sovereign supports both SQLite (default) and MySQL databases:
 ## Future Features
 
 - Web-based admin panel
-- In-game GUI menu
-- Advanced permission system
-- Player session tracking
-- Comprehensive analytics
+- In-game GUI menu (hooks ready for implementation)
+- Advanced analytics
 - Custom punishment presets
+- Extended CAMI integration
 
 ## License
 

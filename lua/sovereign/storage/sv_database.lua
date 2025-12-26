@@ -647,4 +647,122 @@ timer.Simple(0, function()
     Sovereign.Database.Initialize()
 end)
 
+-- Add player role storage table creation to CreateTables function
+hook.Add("Initialize", "Sovereign_CreateRolesTables", function()
+    timer.Simple(1, function()
+        local dbType = Sovereign.Database.Type or "sqlite"
+        
+        if dbType == "sqlite" then
+            sql.Query([[
+                CREATE TABLE IF NOT EXISTS sovereign_player_roles (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    steamid TEXT,
+                    role TEXT,
+                    added_by TEXT,
+                    timestamp INTEGER
+                )
+            ]])
+            print("[Sovereign] Player roles table created.")
+        elseif dbType == "mysql" then
+            local db = Sovereign.Database.Connection
+            if db then
+                local q = db:query([[
+                    CREATE TABLE IF NOT EXISTS sovereign_player_roles (
+                        id INT AUTO_INCREMENT PRIMARY KEY,
+                        steamid VARCHAR(32),
+                        role VARCHAR(32),
+                        added_by VARCHAR(32),
+                        timestamp INT
+                    )
+                ]])
+                q.onSuccess = function() print("[Sovereign] MySQL player roles table created.") end
+                q.onError = function(_, err) print("[Sovereign] MySQL player roles table error: " .. err) end
+                q:start()
+            end
+        end
+    end)
+end)
+
+-- Save player role to database
+function Sovereign.Database.SavePlayerRole(steamid, role)
+    local dbType = Sovereign.Database.Type or "sqlite"
+    
+    if dbType == "sqlite" then
+        sql.Query(string.format([[
+            INSERT INTO sovereign_player_roles (steamid, role, added_by, timestamp)
+            VALUES (%s, %s, 'system', %d)
+        ]], sql.SQLStr(steamid), sql.SQLStr(role), os.time()))
+    elseif dbType == "mysql" then
+        local db = Sovereign.Database.Connection
+        if db then
+            local q = db:query(string.format([[
+                INSERT INTO sovereign_player_roles (steamid, role, added_by, timestamp)
+                VALUES ('%s', '%s', 'system', %d)
+            ]], db:escape(steamid), db:escape(role), os.time()))
+            q:start()
+        end
+    end
+end
+
+-- Remove player role from database
+function Sovereign.Database.RemovePlayerRole(steamid, role)
+    local dbType = Sovereign.Database.Type or "sqlite"
+    
+    if dbType == "sqlite" then
+        sql.Query(string.format([[
+            DELETE FROM sovereign_player_roles WHERE steamid = %s AND role = %s
+        ]], sql.SQLStr(steamid), sql.SQLStr(role)))
+    elseif dbType == "mysql" then
+        local db = Sovereign.Database.Connection
+        if db then
+            local q = db:query(string.format([[
+                DELETE FROM sovereign_player_roles WHERE steamid = '%s' AND role = '%s'
+            ]], db:escape(steamid), db:escape(role)))
+            q:start()
+        end
+    end
+end
+
+-- Load player roles from database
+function Sovereign.Database.LoadPlayerRoles(steamid)
+    local dbType = Sovereign.Database.Type or "sqlite"
+    local roles = {}
+    
+    if dbType == "sqlite" then
+        local result = sql.Query(string.format([[
+            SELECT role FROM sovereign_player_roles WHERE steamid = %s
+        ]], sql.SQLStr(steamid)))
+        
+        if result then
+            for _, row in ipairs(result) do
+                table.insert(roles, row.role)
+            end
+        end
+        
+        Sovereign.PlayerRoles[steamid] = roles
+    elseif dbType == "mysql" then
+        local db = Sovereign.Database.Connection
+        if db then
+            local q = db:query(string.format([[
+                SELECT role FROM sovereign_player_roles WHERE steamid = '%s'
+            ]], db:escape(steamid)))
+            
+            q.onSuccess = function(_, data)
+                for _, row in ipairs(data) do
+                    table.insert(roles, row.role)
+                end
+                Sovereign.PlayerRoles[steamid] = roles
+            end
+            
+            q:start()
+        end
+    end
+end
+
+-- Load player roles on connect
+hook.Add("PlayerInitialSpawn", "Sovereign_LoadPlayerRoles", function(ply)
+    local steamid = ply:SteamID()
+    Sovereign.Database.LoadPlayerRoles(steamid)
+end)
+
 print("[Sovereign] Database system loaded.")

@@ -34,12 +34,15 @@ function Sovereign.HasPermission(ply, commandName)
     local cmd = Sovereign.Commands[commandName]
     if not cmd then return false end
     
-    -- Check if player's usergroup is in the allowed roles
-    local usergroup = ply:GetUserGroup()
+    -- Get all player roles (including multi-role assignments)
+    local playerRoles = Sovereign.GetPlayerRoles(ply)
     
-    for _, role in ipairs(cmd.roles) do
-        if Sovereign.CheckRole(usergroup, role) then
-            return true
+    -- Check if any of the player's roles has access
+    for _, playerRole in ipairs(playerRoles) do
+        for _, requiredRole in ipairs(cmd.roles) do
+            if Sovereign.CheckRole(playerRole, requiredRole) then
+                return true
+            end
         end
     end
     
@@ -125,6 +128,16 @@ function Sovereign.LogCommand(ply, commandName, args)
     -- Store in database if available
     if Sovereign.Database and Sovereign.Database.LogAction then
         Sovereign.Database.LogAction(ply:SteamID(), commandName, table.concat(args or {}, " "))
+    end
+    
+    -- Log to bLogs/mLogs if available
+    if Sovereign.Compat and Sovereign.Compat.LogAction then
+        local target = nil
+        if args and args[1] then
+            target = Sovereign.GetPlayerByName(args[1])
+        end
+        
+        Sovereign.Compat.LogAction(ply, commandName, target, table.concat(args or {}, " "))
     end
 end
 

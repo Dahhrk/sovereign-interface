@@ -1,186 +1,149 @@
-# Quick Start Guide - Sovereign Admin System
+# Sovereign Admin System - Quick Start Guide
 
-## Installation (1 minute)
+## Installation (5 Minutes)
 
-1. Download/clone this repository
-2. Place the `lua/` folder in `garrysmod/addons/sovereign/`
-3. Restart your Garry's Mod server
-4. Done! Commands are ready to use
+1. **Download/Clone** this repository
+2. **Place** the `lua/` folder in `garrysmod/addons/sovereign/`
+3. **Restart** your server or change the map
+4. **Grant yourself superadmin**:
+   - ULX: `ulx adduser <name> superadmin`
+   - ServerGuard: `sg adduser <name> superadmin`
+   - Manual: Edit `garrysmod/settings/users.txt`
 
-## First Commands to Try
+## Quick Configuration
 
+### Change Command Prefix
+Edit `lua/sovereign/config/sh_config.lua`:
+```lua
+Sovereign.Config.Prefix = "/"  -- Change ! to /
 ```
-!freeze john          - Freeze player "john"
-!unfreeze john        - Unfreeze player
-!goto john            - Teleport to player
-!bring john           - Bring player to you
-!noclip               - Toggle your noclip
+
+### Configure Admin Mode
+Edit `lua/sovereign/config/sh_adminmode.lua`:
+```lua
+Sovereign.Config.AdminMode.Model = "models/player/combine_super_soldier.mdl"
+Sovereign.Config.AdminMode.ToggleKey = KEY_F2
 ```
 
-## Default Setup
-
-- **Prefix:** `!` (type `!command` in chat)
-- **Database:** SQLite (automatic, no setup needed)
-- **Roles:** Uses your server's usergroup system
-
-## Who Can Use What?
-
-| Role        | Can Use                                      |
-|-------------|----------------------------------------------|
-| superadmin  | All 28 commands                              |
-| admin       | Most commands (freeze, ban, god, teleport)   |
-| mod         | Basic commands (freeze, kick, warn, noclip)  |
-| user        | No admin commands                            |
-
-## Most Used Commands
-
-### Moderation
+### Set Spawn Limits
+Edit `lua/sovereign/config/sh_limits.lua`:
+```lua
+Sovereign.Config.Limits.Groups["user"] = {
+    props = 50,
+    vehicles = 2,
+    -- etc.
+}
 ```
-!ban <player> <minutes> [reason]    - Ban someone
-!kick <player> [reason]             - Kick someone
-!warn <player> [reason]             - Warn someone
+
+## Essential Commands
+
+### Admin Mode
+```
+!adminmode          - Toggle admin mode on/off
+F2                  - Quick toggle (default keybind)
+```
+
+### Role Management
+```
+!addrole John admin       - Add admin role to John
+!removerole John admin    - Remove admin role from John
+!listroles John           - View John's roles
+!listroles                - View all available roles
+```
+
+### Player Management
+```
+!freeze John              - Freeze player
+!unfreeze John            - Unfreeze player
+!kick John Reason         - Kick player
+!ban John 60 Reason       - Ban for 60 minutes
+!warn John Reason         - Warn player
 ```
 
 ### Teleportation
 ```
-!goto <player>                      - Go to player
-!bring <player>                     - Bring to you
-!return                             - Go back
+!goto John                - Go to John
+!bring John               - Bring John to you
+!return                   - Return to previous location
+!tp 0 0 100              - Teleport to coordinates
 ```
 
 ### Utility
 ```
-!noclip [player]                    - Toggle noclip
-!god [player]                       - Toggle god mode
-!hp <player> <amount>               - Set health
+!noclip                   - Toggle noclip
+!god John                 - Give god mode
+!cloak John               - Make invisible
+!hp John 100             - Set health to 100
+!armor John 100          - Set armor to 100
 ```
 
-### Fun
+## User Roles
+
+### Default Role
+- **superadmin** - Only role included by default
+
+### Available Roles (add with !addrole)
+- **admin** - Most admin commands
+- **mod** - Moderation commands
+- **vip** - VIP privileges
+- **trusted** - Trusted player
+- **user** - Standard player
+
+### Multi-Role Example
 ```
-!freeze <player>                    - Freeze player
-!slap <player> [damage]             - Slap player
-!ignite <player> [seconds]          - Set on fire
-```
-
-## Configuration (Optional)
-
-Edit `lua/sovereign/core/sh_config.lua` to change:
-
-### Change Command Prefix
-```lua
-Sovereign.Config.Prefix = "/"  -- Use /command instead of !command
-```
-
-### Use MySQL Instead of SQLite
-```lua
-Sovereign.Config.Database = {
-    Type = "mysql",
-    MySQL = {
-        Host = "localhost",
-        Username = "your_user",
-        Password = "your_pass",
-        Database = "sovereign"
-    }
-}
+!addrole John admin      # John gets admin role
+!addrole John vip        # John also gets vip role
+                         # John now has both admin AND vip permissions
 ```
 
-## Troubleshooting
+## Admin Mode Features
 
-### Commands not working?
-- Make sure you're an admin: `ulx adduser YourName admin`
-- Check the prefix - default is `!`
-- Look for errors in server console
+When you toggle admin mode:
+- ✓ Model changes to admin model
+- ✓ God mode enabled
+- ✓ Speed increased
+- ✓ Sound plays
+- ✓ DarkRP job switches to "Admin on Duty"
+- ✓ Previous state saved
 
-### Can't find player?
-- Try partial name: `!freeze jo` instead of `!freeze john`
-- Names are case-insensitive
-- Player must be online
+When you toggle off:
+- ✓ Everything restored
+- ✓ Original model back
+- ✓ Original job back (DarkRP)
+- ✓ Original weapons back
 
-### Database errors?
-- SQLite works automatically
-- For MySQL: Install MySQLOO module
-- Check console for specific errors
+## Validation
 
-## Getting Help
-
-1. **Commands:** See `COMMANDS.md` for all 28 commands
-2. **Setup:** See `CONFIGURATION.md` for detailed config
-3. **Testing:** See `TESTING.md` for validation steps
-4. **Security:** See `SECURITY.md` for security info
-
-## Common Tasks
-
-### Add someone as admin
-```
-ulx adduser PlayerName admin
+Run the validation script to check installation:
+```bash
+./validate.sh
 ```
 
-### Ban someone for 24 hours
+Should output:
 ```
-!ban PlayerName 1440 Breaking rules
+✓ All checks passed!
+Errors: 0
+Warnings: 0
 ```
-
-### Check who's banned
-```lua
-lua_run PrintTable(sql.Query("SELECT * FROM sovereign_bans"))
-```
-
-### View recent commands
-```lua
-lua_run PrintTable(sql.Query("SELECT * FROM sovereign_logs ORDER BY timestamp DESC LIMIT 10"))
-```
-
-### Unban someone
-```
-!unban STEAM_0:1:12345678
-```
-
-## Key Features
-
-✓ **28 Commands** - Everything you need for server management  
-✓ **Role System** - Automatic permission inheritance  
-✓ **Database** - Bans, warnings, and logs stored automatically  
-✓ **Partial Names** - Find players easily  
-✓ **Smart Teleport** - Return to where you were  
-✓ **Safe** - SQL injection protected, permission checked  
-
-## What's Next?
-
-The system is fully functional as-is. Future updates may include:
-- In-game GUI menu
-- Web admin panel
-- Advanced analytics
-- Custom presets
-
-But everything works perfectly via commands right now!
 
 ## Quick Reference Card
 
 ```
-MODERATION          TELEPORTATION       UTILITY
-!ban                !goto               !noclip
-!unban              !bring              !god
-!kick               !return             !cloak
-!warn               !tp                 !hp
-!slay               !send               !armor
-
-FUN COMMANDS        DATABASE            ROLES
-!freeze             SQLite auto         superadmin
-!unfreeze           MySQL optional      admin
-!slap               Ban tracking        mod
-!ignite             Warn system         user
-!extinguish         Full logging        (inherits)
+ADMIN MODE: !adminmode or F2
+ROLES:      !addrole, !removerole, !listroles
+BAN:        !ban <player> <minutes> [reason]
+KICK:       !kick <player> [reason]
+FREEZE:     !freeze <player>
+TELEPORT:   !goto, !bring, !return, !tp
+GOD:        !god <player>
+NOCLIP:     !noclip
+CLOAK:      !cloak <player>
 ```
 
-## Support
+For more details, see:
+- `README.md` - Full feature overview
+- `CONFIGURATION.md` - Detailed configuration
+- `COMMANDS.md` - Complete command reference
+- `IMPLEMENTATION.md` - Technical details
 
-- Check console for error messages
-- All actions are logged in the database
-- Commands auto-complete with partial names
-- Permissions are checked automatically
-
----
-
-**That's it! You're ready to manage your server with Sovereign.**
-
-Type `!freeze <player>` in chat to try your first command!
+Enjoy your new admin system! 🎮

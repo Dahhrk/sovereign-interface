@@ -2,6 +2,35 @@
 
 All notable changes to the Sovereign Admin System will be documented in this file.
 
+## [1.1.0] - 2025-12-26
+
+### Added
+
+#### Admin Mode Command Restrictions
+- **Centralized Command Configuration**: New `sh_commands.lua` file for managing command permissions and admin mode requirements
+- **Admin Mode Restrictions**: Commands can now require Admin Mode to be active before execution
+- **Configurable Restriction Toggle**: `RestrictCommands` flag in `sh_adminmode.lua` to enable/disable restrictions globally
+- **Enhanced Audio Feedback**: Renamed and documented EntrySound and ExitSound in admin mode configuration
+- **Security Enhancement**: 11 sensitive commands (ban, kick, warn, etc.) now require Admin Mode when restrictions are enabled
+- **User-Friendly Error Messages**: Clear feedback when restricted commands are attempted without Admin Mode
+
+#### Command Configuration
+- Centralized command metadata with 61 commands configured
+- Each command specifies required roles and admin mode requirement
+- Easy customization of which commands require Admin Mode
+- Separated restricted (11) and non-restricted (50) commands
+
+### Changed
+- Updated `sh_adminmode.lua` with `RestrictCommands` config option
+- Enhanced command execution logic in `sh_core.lua` to check admin mode requirements
+- Improved documentation in CONFIGURATION.md and COMMANDS.md
+
+### Technical Details
+- Added `Sovereign.IsInAdminMode(ply)` helper function for checking admin mode status
+- Admin mode restriction check happens after role permission validation
+- Full backward compatibility maintained with existing commands
+- All validation tests pass
+
 ## [1.0.0] - 2025-12-26
 
 ### Added

@@ -7,6 +7,7 @@ This guide explains how to configure the Sovereign Admin System.
 All configuration files are located in `lua/sovereign/config/`:
 - `sh_config.lua` - Main settings
 - `sh_adminmode.lua` - Admin mode configuration
+- `sh_commands.lua` - Centralized command permissions and restrictions
 - `sh_limits.lua` - Sandbox spawn limits
 - `sh_localization.lua` - Multi-language support
 - `sh_roles.lua` - Role hierarchy and permissions
@@ -317,6 +318,31 @@ Edit `lua/sovereign/config/sh_adminmode.lua` to customize admin mode.
 Sovereign.Config.AdminMode.Enabled = true
 ```
 
+### Command Restrictions
+
+```lua
+Sovereign.Config.AdminMode.RestrictCommands = true
+```
+
+When enabled, certain commands require Admin Mode to be active. This adds an extra layer of security by requiring administrators to explicitly enable Admin Mode before executing sensitive commands like bans, kicks, and warnings.
+
+**Restricted Commands** (require Admin Mode when `RestrictCommands = true`):
+- `!ban`, `!banid`, `!unban` - Player banning
+- `!kick` - Player kicking
+- `!warn` - Player warnings
+- `!slay` - Player slaying
+- `!setrank`, `!setrankid` - Rank management
+- `!addrole`, `!removerole` - Role management
+- `!removeuser` - User data removal
+
+**Non-Restricted Commands** (work without Admin Mode):
+- Fun commands (`!freeze`, `!slap`, `!jail`, etc.)
+- Teleport commands (`!goto`, `!bring`, `!tp`, etc.)
+- Utility commands (`!noclip`, `!god`, `!hp`, etc.)
+- Chat commands (`!pm`, `!asay`, `!mute`, etc.)
+
+To configure which commands require Admin Mode, edit `lua/sovereign/config/sh_commands.lua`.
+
 ### Admin Model
 
 ```lua
@@ -341,10 +367,12 @@ Configure the stats applied when entering admin mode.
 
 ```lua
 Sovereign.Config.AdminMode.Sounds = {
-    Enable = "buttons/button9.wav",      -- Sound when entering admin mode
-    Disable = "buttons/button10.wav"     -- Sound when leaving admin mode
+    Enable = "buttons/button9.wav",      -- Sound when entering admin mode (EntrySound)
+    Disable = "buttons/button10.wav"     -- Sound when leaving admin mode (ExitSound)
 }
 ```
+
+Audio feedback when toggling Admin Mode. You can replace these with custom sound files.
 
 ### DarkRP Integration
 
@@ -364,6 +392,46 @@ Sovereign.Config.AdminMode.ToggleKey = KEY_F2
 ```
 
 Players with admin permissions can use this key to toggle admin mode. Set to `nil` to disable.
+
+---
+
+## Centralized Command Configuration
+
+Edit `lua/sovereign/config/sh_commands.lua` to manage command permissions and restrictions.
+
+### Command Configuration Structure
+
+Each command is configured with:
+- `roles`: Array of roles that can access the command
+- `adminMode`: Whether Admin Mode is required (`true`/`false`)
+
+```lua
+Sovereign.Config.Commands = {
+    ["ban"] = { roles = { "superadmin", "admin" }, adminMode = true },
+    ["kick"] = { roles = { "admin", "mod" }, adminMode = true },
+    ["freeze"] = { roles = { "admin", "mod" }, adminMode = false }
+}
+```
+
+### Modifying Command Restrictions
+
+To change which commands require Admin Mode:
+
+```lua
+-- Make freeze command require Admin Mode
+["freeze"] = { roles = { "admin", "mod" }, adminMode = true }
+
+-- Allow moderators to ban without Admin Mode (not recommended)
+["ban"] = { roles = { "superadmin", "admin" }, adminMode = false }
+```
+
+### Adding New Command Configurations
+
+When adding new commands to the system, add them to `sh_commands.lua`:
+
+```lua
+["mycommand"] = { roles = { "admin" }, adminMode = false }
+```
 
 ---
 

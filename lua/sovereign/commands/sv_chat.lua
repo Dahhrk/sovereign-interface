@@ -177,6 +177,9 @@ end, "Ungag a player's text chat")
 
 -- Hook to prevent gagged players from chatting
 hook.Add("PlayerSay", "Sovereign_GagCheck", function(ply, text)
+    -- Quick check: skip if no players are gagged
+    if not next(Sovereign.GaggedPlayers) then return end
+    
     -- Check if player is gagged
     if Sovereign.GaggedPlayers[ply:SteamID()] then
         Sovereign.NotifyPlayer(ply, "You are gagged and cannot use text chat")

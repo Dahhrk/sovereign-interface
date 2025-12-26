@@ -211,7 +211,6 @@ hook.Add("PlayerSay", "Sovereign_AdminChat", function(ply, text)
         end
         
         -- Send to all staff members
-        local chatColor = Sovereign.Config.Chat.Colors.AdminChat
         for _, target in ipairs(player.GetAll()) do
             if Sovereign.PlayerHasRole(target, "mod") then
                 target:ChatPrint("[Admin Chat] " .. ply:Nick() .. ": " .. message)

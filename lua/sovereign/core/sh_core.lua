@@ -168,7 +168,6 @@ function Sovereign.LogCommand(ply, commandName, args, isSilent)
             -- For silent commands, only notify the issuer
             local actionMessage = Sovereign.FormatAdminAction(ply, commandName, args)
             if actionMessage then
-                local silentColor = Sovereign.Config.Chat.Colors.SilentCommand or Color(100, 100, 100)
                 ply:ChatPrint("[Silent] " .. actionMessage)
             end
         end
@@ -180,18 +179,17 @@ function Sovereign.FormatAdminAction(ply, commandName, args)
     if not IsValid(ply) then return nil end
     
     local targetName = args and args[1] or nil
-    local target = targetName and Sovereign.GetPlayerByName(targetName)
     
     -- Format message based on command type
     if commandName == "ban" then
         local duration = args[2] or "permanent"
-        local reason = table.concat(args, " ", 3) or "No reason"
+        local reason = (#args >= 3 and table.concat(args, " ", 3)) or "No reason"
         return ply:Nick() .. " banned " .. (targetName or "unknown") .. " for " .. duration .. ". Reason: " .. reason
     elseif commandName == "kick" then
-        local reason = table.concat(args, " ", 2) or "No reason"
+        local reason = (#args >= 2 and table.concat(args, " ", 2)) or "No reason"
         return ply:Nick() .. " kicked " .. (targetName or "unknown") .. ". Reason: " .. reason
     elseif commandName == "warn" then
-        local reason = table.concat(args, " ", 2) or "No reason"
+        local reason = (#args >= 2 and table.concat(args, " ", 2)) or "No reason"
         return ply:Nick() .. " warned " .. (targetName or "unknown") .. ". Reason: " .. reason
     elseif commandName == "freeze" then
         return ply:Nick() .. " froze " .. (targetName or "unknown")
@@ -262,7 +260,7 @@ if SERVER then
             
             isSilent = true
             -- Remove silent prefix and process as command
-            local commandString = string.sub(text, #silentPrefix + 1)
+            local commandString = string.Trim(string.sub(text, #silentPrefix + 1))
             local args = string.Explode(" ", commandString)
             local commandName = string.lower(table.remove(args, 1) or "")
             
@@ -280,7 +278,7 @@ if SERVER then
         end
         
         -- Remove prefix and split into command and arguments
-        local commandString = string.sub(text, #prefix + 1)
+        local commandString = string.Trim(string.sub(text, #prefix + 1))
         local args = string.Explode(" ", commandString)
         local commandName = string.lower(table.remove(args, 1) or "")
         

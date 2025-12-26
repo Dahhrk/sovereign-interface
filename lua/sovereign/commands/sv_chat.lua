@@ -202,11 +202,11 @@ hook.Add("PlayerSay", "Sovereign_AdminChat", function(ply, text)
             return ""
         end
         
-        -- Extract message after prefix
-        local message = text:sub(#prefix + 1)
+        -- Extract message after prefix and trim whitespace
+        local message = string.Trim(text:sub(#prefix + 1))
         
         -- Don't send empty messages
-        if message == "" or message == " " then
+        if message == "" then
             return ""
         end
         

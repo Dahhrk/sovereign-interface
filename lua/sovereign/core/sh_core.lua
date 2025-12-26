@@ -222,7 +222,6 @@ end
 function Sovereign.NotifyAdminsAction(message)
     if not SERVER then return end
     
-    local actionColor = Sovereign.Config.Chat and Sovereign.Config.Chat.Colors.AdminAction or Color(0, 200, 255)
     local actionPrefix = Sovereign.Config.Chat and Sovereign.Config.Chat.AdminActionPrefix or "[Admin Action]"
     
     for _, ply in ipairs(player.GetAll()) do

@@ -231,4 +231,182 @@ Sovereign.RegisterCommand("respawn", { "admin", "mod" }, function(admin, args)
     Sovereign.NotifyPlayer(target, "You were respawned by " .. admin:Nick())
 end, "Respawn a player")
 
+-- Stop Sound Command
+Sovereign.RegisterCommand("stopsound", { "admin", "mod" }, function(admin, args)
+    local targetName = args[1]
+    
+    -- If no target specified, stop sounds for admin
+    if not targetName then
+        admin:ConCommand("stopsound")
+        Sovereign.NotifyPlayer(admin, "Stopped all sounds for you")
+        return
+    end
+    
+    -- Stop sounds for target
+    local target = Sovereign.GetPlayerByName(targetName)
+    if not IsValid(target) then
+        Sovereign.NotifyPlayer(admin, "Player not found: " .. targetName)
+        return
+    end
+    
+    target:ConCommand("stopsound")
+    Sovereign.NotifyPlayer(admin, "Stopped all sounds for " .. target:Nick())
+    Sovereign.NotifyPlayer(target, "All sounds stopped by " .. admin:Nick())
+end, "Stop all sounds for a player")
+
+-- Clear Decals Command
+Sovereign.RegisterCommand("cleardecals", { "admin", "mod" }, function(admin, args)
+    local targetName = args[1]
+    
+    -- If no target specified, clear decals for admin
+    if not targetName then
+        admin:ConCommand("r_cleardecals")
+        Sovereign.NotifyPlayer(admin, "Cleared decals for you")
+        return
+    end
+    
+    -- Clear decals for target
+    local target = Sovereign.GetPlayerByName(targetName)
+    if not IsValid(target) then
+        Sovereign.NotifyPlayer(admin, "Player not found: " .. targetName)
+        return
+    end
+    
+    target:ConCommand("r_cleardecals")
+    Sovereign.NotifyPlayer(admin, "Cleared decals for " .. target:Nick())
+    Sovereign.NotifyPlayer(target, "Decals cleared by " .. admin:Nick())
+end, "Clear decals for a player")
+
+-- Map Command
+Sovereign.RegisterCommand("map", { "superadmin", "admin" }, function(admin, args)
+    local mapName = args[1]
+    
+    if not mapName then
+        Sovereign.NotifyPlayer(admin, "Usage: !map <mapname>")
+        return
+    end
+    
+    Sovereign.NotifyAdmins(admin:Nick() .. " is changing map to " .. mapName)
+    
+    timer.Simple(3, function()
+        RunConsoleCommand("changelevel", mapName)
+    end)
+end, "Change the server map")
+
+-- Map Restart Command
+Sovereign.RegisterCommand("maprestart", { "superadmin", "admin" }, function(admin, args)
+    local delay = tonumber(args[1]) or 3
+    
+    Sovereign.NotifyAdmins(admin:Nick() .. " is restarting the map in " .. delay .. " seconds")
+    
+    timer.Simple(delay, function()
+        game.CleanUpMap()
+        for _, ply in ipairs(player.GetAll()) do
+            ply:Spawn()
+        end
+    end)
+end, "Restart the current map")
+
+-- Map Reset Command
+Sovereign.RegisterCommand("mapreset", { "superadmin", "admin" }, function(admin, args)
+    game.CleanUpMap()
+    Sovereign.NotifyAdmins(admin:Nick() .. " reset all map entities")
+end, "Reset all map entities")
+
+-- Give Weapon/Entity Command
+Sovereign.RegisterCommand("give", { "admin" }, function(admin, args)
+    local targetName = args[1]
+    local entityClass = args[2]
+    
+    if not targetName or not entityClass then
+        Sovereign.NotifyPlayer(admin, "Usage: !give <player> <weapon/entity>")
+        return
+    end
+    
+    local target = Sovereign.GetPlayerByName(targetName)
+    if not IsValid(target) then
+        Sovereign.NotifyPlayer(admin, "Player not found: " .. targetName)
+        return
+    end
+    
+    target:Give(entityClass)
+    Sovereign.NotifyPlayer(admin, "Gave " .. entityClass .. " to " .. target:Nick())
+    Sovereign.NotifyPlayer(target, "You received " .. entityClass .. " from " .. admin:Nick())
+end, "Give a weapon or entity to a player")
+
+-- Playtime tracking table
+Sovereign.PlaytimeData = Sovereign.PlaytimeData or {}
+
+-- Track player join time
+hook.Add("PlayerInitialSpawn", "Sovereign_TrackPlaytime", function(ply)
+    Sovereign.PlaytimeData[ply:SteamID()] = {
+        joinTime = os.time(),
+        sessionStart = CurTime()
+    }
+end)
+
+-- Update playtime on disconnect
+hook.Add("PlayerDisconnected", "Sovereign_SavePlaytime", function(ply)
+    local data = Sovereign.PlaytimeData[ply:SteamID()]
+    if data and Sovereign.Database and Sovereign.Database.UpdatePlaytime then
+        local sessionTime = CurTime() - data.sessionStart
+        Sovereign.Database.UpdatePlaytime(ply:SteamID(), sessionTime)
+    end
+    Sovereign.PlaytimeData[ply:SteamID()] = nil
+end)
+
+-- Time Command
+Sovereign.RegisterCommand("time", { "admin", "mod" }, function(admin, args)
+    local targetName = args[1]
+    
+    if not targetName then
+        Sovereign.NotifyPlayer(admin, "Usage: !time <player>")
+        return
+    end
+    
+    local target = Sovereign.GetPlayerByName(targetName)
+    if not IsValid(target) then
+        Sovereign.NotifyPlayer(admin, "Player not found: " .. targetName)
+        return
+    end
+    
+    local data = Sovereign.PlaytimeData[target:SteamID()]
+    if data then
+        local sessionTime = CurTime() - data.sessionStart
+        local formattedTime = string.FormattedTime(sessionTime, "%02i:%02i:%02i")
+        Sovereign.NotifyPlayer(admin, target:Nick() .. " current session: " .. formattedTime)
+    else
+        Sovereign.NotifyPlayer(admin, "No playtime data for " .. target:Nick())
+    end
+end, "Show player's current session playtime")
+
+-- Total Time Command
+Sovereign.RegisterCommand("totaltime", { "admin", "mod" }, function(admin, args)
+    local targetName = args[1]
+    
+    if not targetName then
+        Sovereign.NotifyPlayer(admin, "Usage: !totaltime <player>")
+        return
+    end
+    
+    local target = Sovereign.GetPlayerByName(targetName)
+    if not IsValid(target) then
+        Sovereign.NotifyPlayer(admin, "Player not found: " .. targetName)
+        return
+    end
+    
+    if Sovereign.Database and Sovereign.Database.GetPlaytime then
+        Sovereign.Database.GetPlaytime(target:SteamID(), function(totalSeconds)
+            if totalSeconds then
+                local formattedTime = string.FormattedTime(totalSeconds, "%02i:%02i:%02i")
+                Sovereign.NotifyPlayer(admin, target:Nick() .. " total playtime: " .. formattedTime)
+            else
+                Sovereign.NotifyPlayer(admin, "No total playtime data for " .. target:Nick())
+            end
+        end)
+    else
+        Sovereign.NotifyPlayer(admin, "Database not available for playtime tracking")
+    end
+end, "Show player's total playtime on server")
+
 print("[Sovereign] Utility commands loaded.")

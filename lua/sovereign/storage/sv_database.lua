@@ -99,6 +99,35 @@ function Sovereign.Database.CreateTables()
             )
         ]])
         
+        -- Playtime table
+        sql.Query([[
+            CREATE TABLE IF NOT EXISTS sovereign_playtime (
+                steamid TEXT PRIMARY KEY,
+                total_seconds INTEGER DEFAULT 0,
+                last_updated INTEGER
+            )
+        ]])
+        
+        -- User ranks table
+        sql.Query([[
+            CREATE TABLE IF NOT EXISTS sovereign_users (
+                steamid TEXT PRIMARY KEY,
+                rank TEXT,
+                last_updated INTEGER
+            )
+        ]])
+        
+        -- Jail positions table
+        sql.Query([[
+            CREATE TABLE IF NOT EXISTS sovereign_jail_positions (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                pos_x REAL,
+                pos_y REAL,
+                pos_z REAL,
+                ang_y REAL
+            )
+        ]])
+        
         print("[Sovereign] SQLite tables created successfully.")
     elseif dbType == "mysql" then
         -- MySQL table creation
@@ -153,6 +182,44 @@ function Sovereign.Database.CreateTables()
         q3.onSuccess = function() print("[Sovereign] MySQL logs table created.") end
         q3.onError = function(_, err) print("[Sovereign] MySQL logs table error: " .. err) end
         q3:start()
+        
+        -- Playtime table
+        local q4 = db:query([[
+            CREATE TABLE IF NOT EXISTS sovereign_playtime (
+                steamid VARCHAR(32) PRIMARY KEY,
+                total_seconds INT DEFAULT 0,
+                last_updated INT
+            )
+        ]])
+        q4.onSuccess = function() print("[Sovereign] MySQL playtime table created.") end
+        q4.onError = function(_, err) print("[Sovereign] MySQL playtime table error: " .. err) end
+        q4:start()
+        
+        -- User ranks table
+        local q5 = db:query([[
+            CREATE TABLE IF NOT EXISTS sovereign_users (
+                steamid VARCHAR(32) PRIMARY KEY,
+                rank VARCHAR(32),
+                last_updated INT
+            )
+        ]])
+        q5.onSuccess = function() print("[Sovereign] MySQL users table created.") end
+        q5.onError = function(_, err) print("[Sovereign] MySQL users table error: " .. err) end
+        q5:start()
+        
+        -- Jail positions table
+        local q6 = db:query([[
+            CREATE TABLE IF NOT EXISTS sovereign_jail_positions (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                pos_x FLOAT,
+                pos_y FLOAT,
+                pos_z FLOAT,
+                ang_y FLOAT
+            )
+        ]])
+        q6.onSuccess = function() print("[Sovereign] MySQL jail positions table created.") end
+        q6.onError = function(_, err) print("[Sovereign] MySQL jail positions table error: " .. err) end
+        q6:start()
     end
 end
 
@@ -273,6 +340,158 @@ function Sovereign.Database.LogAction(steamid, command, arguments)
         end
     end
 end
+
+-- Update playtime
+function Sovereign.Database.UpdatePlaytime(steamid, sessionSeconds)
+    local dbType = Sovereign.Database.Type or "sqlite"
+    
+    if dbType == "sqlite" then
+        -- Get current playtime
+        local result = sql.Query(string.format([[
+            SELECT total_seconds FROM sovereign_playtime WHERE steamid = %s
+        ]], sql.SQLStr(steamid)))
+        
+        local currentTotal = 0
+        if result and #result > 0 then
+            currentTotal = tonumber(result[1].total_seconds) or 0
+        end
+        
+        local newTotal = currentTotal + math.floor(sessionSeconds)
+        
+        -- Update or insert
+        local query = sql.Query(string.format([[
+            INSERT OR REPLACE INTO sovereign_playtime 
+            (steamid, total_seconds, last_updated) 
+            VALUES (%s, %d, %d)
+        ]], 
+            sql.SQLStr(steamid),
+            newTotal,
+            os.time()
+        ))
+        
+        if query == false then
+            print("[Sovereign] Error updating playtime: " .. sql.LastError())
+        end
+    end
+end
+
+-- Get playtime
+function Sovereign.Database.GetPlaytime(steamid, callback)
+    local dbType = Sovereign.Database.Type or "sqlite"
+    
+    if dbType == "sqlite" then
+        local result = sql.Query(string.format([[
+            SELECT total_seconds FROM sovereign_playtime WHERE steamid = %s
+        ]], sql.SQLStr(steamid)))
+        
+        if result and #result > 0 then
+            callback(tonumber(result[1].total_seconds) or 0)
+        else
+            callback(0)
+        end
+    end
+end
+
+-- Set user rank
+function Sovereign.Database.SetUserRank(steamid, rank)
+    local dbType = Sovereign.Database.Type or "sqlite"
+    
+    if dbType == "sqlite" then
+        local query = sql.Query(string.format([[
+            INSERT OR REPLACE INTO sovereign_users 
+            (steamid, rank, last_updated) 
+            VALUES (%s, %s, %d)
+        ]], 
+            sql.SQLStr(steamid),
+            sql.SQLStr(rank),
+            os.time()
+        ))
+        
+        if query == false then
+            print("[Sovereign] Error setting user rank: " .. sql.LastError())
+        end
+    end
+end
+
+-- Remove user
+function Sovereign.Database.RemoveUser(steamid)
+    local dbType = Sovereign.Database.Type or "sqlite"
+    
+    if dbType == "sqlite" then
+        -- Remove from users table
+        sql.Query(string.format([[
+            DELETE FROM sovereign_users WHERE steamid = %s
+        ]], sql.SQLStr(steamid)))
+        
+        -- Remove warnings
+        sql.Query(string.format([[
+            DELETE FROM sovereign_warnings WHERE steamid = %s
+        ]], sql.SQLStr(steamid)))
+        
+        -- Note: We don't remove bans or logs for record keeping
+    end
+end
+
+-- Set jail positions
+function Sovereign.Database.SetJailPositions(positions)
+    local dbType = Sovereign.Database.Type or "sqlite"
+    
+    if dbType == "sqlite" then
+        -- Clear existing positions
+        sql.Query("DELETE FROM sovereign_jail_positions")
+        
+        -- Insert new positions
+        for _, pos in ipairs(positions) do
+            local query = sql.Query(string.format([[
+                INSERT INTO sovereign_jail_positions 
+                (pos_x, pos_y, pos_z, ang_y) 
+                VALUES (%f, %f, %f, %f)
+            ]], 
+                pos.pos.x,
+                pos.pos.y,
+                pos.pos.z,
+                pos.ang.y
+            ))
+            
+            if query == false then
+                print("[Sovereign] Error setting jail position: " .. sql.LastError())
+            end
+        end
+    end
+end
+
+-- Get jail positions
+function Sovereign.Database.GetJailPositions()
+    local dbType = Sovereign.Database.Type or "sqlite"
+    local positions = {}
+    
+    if dbType == "sqlite" then
+        local result = sql.Query("SELECT * FROM sovereign_jail_positions")
+        
+        if result then
+            for _, row in ipairs(result) do
+                table.insert(positions, {
+                    pos = Vector(tonumber(row.pos_x), tonumber(row.pos_y), tonumber(row.pos_z)),
+                    ang = Angle(0, tonumber(row.ang_y), 0)
+                })
+            end
+        end
+    end
+    
+    return positions
+end
+
+-- Load jail positions on startup
+hook.Add("Initialize", "Sovereign_LoadJailPositions", function()
+    timer.Simple(1, function()
+        if Sovereign.Database and Sovereign.Database.GetJailPositions then
+            Sovereign.JailPositions = Sovereign.Database.GetJailPositions()
+            if #Sovereign.JailPositions > 0 then
+                print("[Sovereign] Loaded " .. #Sovereign.JailPositions .. " jail positions from database")
+            end
+        end
+    end)
+end)
 
 -- Check bans on player connect
 hook.Add("CheckPassword", "Sovereign_BanCheck", function(steamid64, ipaddress, svpassword, clpassword, name)

@@ -314,6 +314,24 @@ function Sovereign.Database.AddWarning(steamid, name, adminSteamid, adminName, r
         if query == false then
             print("[Sovereign] Error adding warning: " .. sql.LastError())
         end
+    elseif dbType == "mysql" then
+        local db = Sovereign.Database.Connection
+        if not db then return end
+        
+        local q = db:query(string.format([[
+            INSERT INTO sovereign_warnings 
+            (steamid, name, admin_steamid, admin_name, reason, timestamp) 
+            VALUES ('%s', '%s', '%s', '%s', '%s', %d)
+        ]], 
+            db:escape(steamid),
+            db:escape(name),
+            db:escape(adminSteamid),
+            db:escape(adminName),
+            db:escape(reason),
+            os.time()
+        ))
+        q.onError = function(_, err) print("[Sovereign] MySQL warning insert error: " .. err) end
+        q:start()
     end
 end
 
@@ -563,33 +581,49 @@ function Sovereign.Database.GetJailPositions()
             end
         end
     elseif dbType == "mysql" then
-        -- For MySQL, we need to load positions asynchronously on server start
-        -- This function returns empty table for MySQL, positions are loaded via hook
-        local db = Sovereign.Database.Connection
-        if not db then return positions end
-        
-        local q = db:query("SELECT * FROM sovereign_jail_positions")
-        q.onSuccess = function(_, data)
-            if data then
-                for _, row in ipairs(data) do
-                    table.insert(Sovereign.JailPositions, {
-                        pos = Vector(tonumber(row.pos_x), tonumber(row.pos_y), tonumber(row.pos_z)),
-                        ang = Angle(0, tonumber(row.ang_y), 0)
-                    })
-                end
-            end
-        end
-        q.onError = function(_, err) print("[Sovereign] MySQL jail position load error: " .. err) end
-        q:start()
+        -- For MySQL, positions are loaded asynchronously via hook
+        -- Return current positions if already loaded
+        return Sovereign.JailPositions or {}
     end
     
     return positions
 end
 
--- Load jail positions on startup
+-- Load jail positions from MySQL on startup
+hook.Add("Initialize", "Sovereign_LoadJailPositionsMySQL", function()
+    timer.Simple(2, function()
+        if Sovereign.Database and Sovereign.Database.Type == "mysql" then
+            local db = Sovereign.Database.Connection
+            if not db then return end
+            
+            Sovereign.JailPositions = Sovereign.JailPositions or {}
+            
+            local q = db:query("SELECT * FROM sovereign_jail_positions")
+            q.onSuccess = function(_, data)
+                if data then
+                    -- Clear existing positions before loading
+                    Sovereign.JailPositions = {}
+                    for _, row in ipairs(data) do
+                        table.insert(Sovereign.JailPositions, {
+                            pos = Vector(tonumber(row.pos_x), tonumber(row.pos_y), tonumber(row.pos_z)),
+                            ang = Angle(0, tonumber(row.ang_y), 0)
+                        })
+                    end
+                    if #Sovereign.JailPositions > 0 then
+                        print("[Sovereign] Loaded " .. #Sovereign.JailPositions .. " jail positions from MySQL")
+                    end
+                end
+            end
+            q.onError = function(_, err) print("[Sovereign] MySQL jail position load error: " .. err) end
+            q:start()
+        end
+    end)
+end)
+
+-- Load jail positions on startup (SQLite only, MySQL uses hook above)
 hook.Add("Initialize", "Sovereign_LoadJailPositions", function()
     timer.Simple(1, function()
-        if Sovereign.Database and Sovereign.Database.GetJailPositions then
+        if Sovereign.Database and Sovereign.Database.GetJailPositions and Sovereign.Database.Type == "sqlite" then
             Sovereign.JailPositions = Sovereign.Database.GetJailPositions()
             if #Sovereign.JailPositions > 0 then
                 print("[Sovereign] Loaded " .. #Sovereign.JailPositions .. " jail positions from database")

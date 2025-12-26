@@ -7,6 +7,9 @@ Sovereign.Config.AdminMode = Sovereign.Config.AdminMode or {}
 -- Admin Mode Settings
 Sovereign.Config.AdminMode.Enabled = true
 
+-- Command Restrictions
+Sovereign.Config.AdminMode.RestrictCommands = true  -- Enable/disable command restrictions globally
+
 -- Admin Model (player model when in admin mode)
 Sovereign.Config.AdminMode.Model = "models/player/combine_super_soldier.mdl"
 
@@ -19,8 +22,8 @@ Sovereign.Config.AdminMode.JumpPower = 1.5  -- Jump power multiplier
 
 -- Sounds
 Sovereign.Config.AdminMode.Sounds = {
-    Enable = "buttons/button9.wav",      -- Sound when entering admin mode
-    Disable = "buttons/button10.wav"     -- Sound when leaving admin mode
+    Enable = "buttons/button9.wav",      -- Sound when entering admin mode (EntrySound)
+    Disable = "buttons/button10.wav"     -- Sound when leaving admin mode (ExitSound)
 }
 
 -- Admin Mode Visibility

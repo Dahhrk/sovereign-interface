@@ -9,6 +9,13 @@ Sovereign.AdminMode = Sovereign.AdminMode or {}
 local playersInAdminMode = {}
 local previousStates = {}
 
+-- Function to check if a player is in admin mode
+function Sovereign.IsInAdminMode(ply)
+    if not IsValid(ply) then return false end
+    local steamID = ply:SteamID()
+    return playersInAdminMode[steamID] == true
+end
+
 -- Admin Mode Toggle Command
 Sovereign.RegisterCommand("adminmode", { "superadmin", "admin" }, function(admin, args)
     if not Sovereign.Config.AdminMode or not Sovereign.Config.AdminMode.Enabled then

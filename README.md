@@ -27,6 +27,11 @@ A lightweight, modular, command-based admin system for Garry's Mod servers.
 - `!gag <player> [duration]` - Gag a player's text chat
 - `!ungag <player>` - Ungag a player's text chat
 
+#### Admin Chat & Communication Features
+- **Admin Chat** - Use `@ <message>` to send messages to all staff members
+- **Silent Commands** - Use `$ <command>` to execute commands without broadcasting to other admins (superadmin/admin only)
+- **Admin Action Logs** - All admin actions are automatically broadcast to staff members in real-time
+
 #### Moderation Commands (8 commands)
 - `!ban <player> <duration> [reason]` - Ban a player from the server
 - `!banid <steamid> <duration> [reason]` - Ban a player by SteamID

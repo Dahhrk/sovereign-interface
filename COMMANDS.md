@@ -117,6 +117,62 @@ Format: `!command <required_argument> [optional_argument]`
 
 ---
 
+## Admin Communication Features
+
+### Admin Chat
+**Usage:** `@ <message>`  
+**Permission:** mod and above  
+**Description:** Send a message visible only to staff members (mod, admin, superadmin). This is a special chat channel for staff coordination.  
+**Example:** `@ Need backup at spawn, RDMer present`
+
+**How it works:**
+- Type `@` followed by your message
+- All online staff members will see the message
+- Regular players cannot see or use this channel
+- Useful for coordinating admin actions without alerting rule breakers
+
+### Silent Commands
+**Usage:** `$ <command> [arguments]`  
+**Permission:** superadmin, admin  
+**Description:** Execute any command silently. The action will be performed, but other staff members will not be notified.  
+**Example:** `$ban John 1h Griefing`
+
+**How it works:**
+- Use `$` instead of `!` before any command
+- The command executes normally
+- Only you will see the confirmation message
+- Other admins will not see the admin action log
+- Server console still logs the action
+- Useful for undercover investigations or avoiding notification spam
+
+**Silent Command Examples:**
+- `$kick Alice AFK` - Kick without announcing to other admins
+- `$freeze Bob` - Freeze player silently
+- `$warn Charlie Spamming` - Warn without broadcasting
+
+### Admin Action Logs
+**Description:** All admin actions are automatically broadcast to staff members in real-time.  
+**Permission:** mod and above (to see logs)  
+**Configurable:** Can be toggled in `sh_chat.lua`
+
+**How it works:**
+- When an admin executes a command (using `!`), all staff see a notification
+- Format: `[Admin Action] AdminName performed action on TargetName`
+- Examples:
+  - `[Admin Action] Jane banned John for 1h. Reason: Griefing.`
+  - `[Admin Action] Bob kicked Alice. Reason: AFK.`
+  - `[Admin Action] Charlie froze Dave`
+- Silent commands (using `$`) bypass these notifications
+
+**Configuration:**
+```lua
+-- In lua/sovereign/config/sh_chat.lua
+Sovereign.Config.Chat.AdminLogsVisibleToStaff = true  -- Enable/disable logs
+Sovereign.Config.Chat.AdminActionPrefix = "[Admin Action]"  -- Customize prefix
+```
+
+---
+
 ## Moderation Commands
 
 **Note:** When `RestrictCommands` is enabled in `sh_adminmode.lua`, most moderation commands require Admin Mode to be active. Use `!adminmode` to toggle Admin Mode before using these commands.

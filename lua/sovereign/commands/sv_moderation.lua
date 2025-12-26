@@ -146,12 +146,9 @@ Sovereign.RegisterCommand("banid", { "superadmin", "admin" }, function(admin, ar
     end
     
     -- Validate SteamID format
-    if not Sovereign.Helpers or not Sovereign.Helpers.IsValidSteamID(steamID) then
-        -- Basic validation
-        if not string.match(steamID, "STEAM_%d:%d:%d+") then
-            Sovereign.NotifyPlayer(admin, "Invalid SteamID format")
-            return
-        end
+    if not string.match(steamID, "STEAM_%d:%d:%d+") then
+        Sovereign.NotifyPlayer(admin, "Invalid SteamID format")
+        return
     end
     
     -- Store ban in database

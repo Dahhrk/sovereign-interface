@@ -38,4 +38,7 @@ Sovereign.Config.BanDurations = {
     permanent = 0    -- 0 = permanent
 }
 
+-- Jail configuration
+Sovereign.Config.JailModel = "models/props_phx/construct/metal_plate1.mdl"
+
 print("[Sovereign] Configuration loaded.")

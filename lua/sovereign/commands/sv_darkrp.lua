@@ -155,12 +155,18 @@ Sovereign.RegisterCommand("selldoor", { "admin", "mod" }, function(admin, args)
     
     -- Get the door the admin is looking at
     local trace = admin:GetEyeTrace()
-    if not IsValid(trace.Entity) or not trace.Entity:isDoor() then
+    if not IsValid(trace.Entity) then
         Sovereign.NotifyPlayer(admin, "You must be looking at a door")
         return
     end
     
     local door = trace.Entity
+    
+    -- Check if entity has DarkRP door functions
+    if not door.isDoor or not door:isDoor() then
+        Sovereign.NotifyPlayer(admin, "You must be looking at a door")
+        return
+    end
     
     -- Sell the door
     if door.removeOwner then
@@ -195,7 +201,7 @@ Sovereign.RegisterCommand("sellall", { "admin", "mod" }, function(admin, args)
     -- Sell all doors owned by the player
     local doorCount = 0
     for _, ent in ipairs(ents.GetAll()) do
-        if ent:isDoor() and ent:getOwner() == target then
+        if IsValid(ent) and ent.isDoor and ent:isDoor() and ent.getOwner and ent:getOwner() == target then
             if ent.removeOwner then
                 ent:removeOwner()
                 doorCount = doorCount + 1

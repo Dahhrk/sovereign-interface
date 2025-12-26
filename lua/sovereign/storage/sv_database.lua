@@ -372,6 +372,20 @@ function Sovereign.Database.UpdatePlaytime(steamid, sessionSeconds)
         if query == false then
             print("[Sovereign] Error updating playtime: " .. sql.LastError())
         end
+    elseif dbType == "mysql" then
+        local db = Sovereign.Database.Connection
+        if not db then return end
+        
+        local newTotal = math.floor(sessionSeconds)
+        local q = db:query(string.format([[
+            INSERT INTO sovereign_playtime (steamid, total_seconds, last_updated) 
+            VALUES ('%s', %d, %d) 
+            ON DUPLICATE KEY UPDATE 
+            total_seconds = total_seconds + %d, 
+            last_updated = %d
+        ]], db:escape(steamid), newTotal, os.time(), newTotal, os.time()))
+        q.onError = function(_, err) print("[Sovereign] MySQL playtime update error: " .. err) end
+        q:start()
     end
 end
 
@@ -389,6 +403,28 @@ function Sovereign.Database.GetPlaytime(steamid, callback)
         else
             callback(0)
         end
+    elseif dbType == "mysql" then
+        local db = Sovereign.Database.Connection
+        if not db then 
+            callback(0)
+            return 
+        end
+        
+        local q = db:query(string.format([[
+            SELECT total_seconds FROM sovereign_playtime WHERE steamid = '%s'
+        ]], db:escape(steamid)))
+        q.onSuccess = function(_, data)
+            if data and #data > 0 then
+                callback(tonumber(data[1].total_seconds) or 0)
+            else
+                callback(0)
+            end
+        end
+        q.onError = function(_, err) 
+            print("[Sovereign] MySQL playtime get error: " .. err)
+            callback(0)
+        end
+        q:start()
     end
 end
 
@@ -410,6 +446,19 @@ function Sovereign.Database.SetUserRank(steamid, rank)
         if query == false then
             print("[Sovereign] Error setting user rank: " .. sql.LastError())
         end
+    elseif dbType == "mysql" then
+        local db = Sovereign.Database.Connection
+        if not db then return end
+        
+        local q = db:query(string.format([[
+            INSERT INTO sovereign_users (steamid, rank, last_updated) 
+            VALUES ('%s', '%s', %d) 
+            ON DUPLICATE KEY UPDATE 
+            rank = '%s', 
+            last_updated = %d
+        ]], db:escape(steamid), db:escape(rank), os.time(), db:escape(rank), os.time()))
+        q.onError = function(_, err) print("[Sovereign] MySQL rank update error: " .. err) end
+        q:start()
     end
 end
 
@@ -429,6 +478,23 @@ function Sovereign.Database.RemoveUser(steamid)
         ]], sql.SQLStr(steamid)))
         
         -- Note: We don't remove bans or logs for record keeping
+    elseif dbType == "mysql" then
+        local db = Sovereign.Database.Connection
+        if not db then return end
+        
+        -- Remove from users table
+        local q1 = db:query(string.format([[
+            DELETE FROM sovereign_users WHERE steamid = '%s'
+        ]], db:escape(steamid)))
+        q1.onError = function(_, err) print("[Sovereign] MySQL remove user error: " .. err) end
+        q1:start()
+        
+        -- Remove warnings
+        local q2 = db:query(string.format([[
+            DELETE FROM sovereign_warnings WHERE steamid = '%s'
+        ]], db:escape(steamid)))
+        q2.onError = function(_, err) print("[Sovereign] MySQL remove warnings error: " .. err) end
+        q2:start()
     end
 end
 
@@ -457,6 +523,26 @@ function Sovereign.Database.SetJailPositions(positions)
                 print("[Sovereign] Error setting jail position: " .. sql.LastError())
             end
         end
+    elseif dbType == "mysql" then
+        local db = Sovereign.Database.Connection
+        if not db then return end
+        
+        -- Clear existing positions
+        local qClear = db:query("DELETE FROM sovereign_jail_positions")
+        qClear.onSuccess = function()
+            -- Insert new positions
+            for _, pos in ipairs(positions) do
+                local qInsert = db:query(string.format([[
+                    INSERT INTO sovereign_jail_positions 
+                    (pos_x, pos_y, pos_z, ang_y) 
+                    VALUES (%f, %f, %f, %f)
+                ]], pos.pos.x, pos.pos.y, pos.pos.z, pos.ang.y))
+                qInsert.onError = function(_, err) print("[Sovereign] MySQL jail position insert error: " .. err) end
+                qInsert:start()
+            end
+        end
+        qClear.onError = function(_, err) print("[Sovereign] MySQL jail position clear error: " .. err) end
+        qClear:start()
     end
 end
 
@@ -476,6 +562,25 @@ function Sovereign.Database.GetJailPositions()
                 })
             end
         end
+    elseif dbType == "mysql" then
+        -- For MySQL, we need to load positions asynchronously on server start
+        -- This function returns empty table for MySQL, positions are loaded via hook
+        local db = Sovereign.Database.Connection
+        if not db then return positions end
+        
+        local q = db:query("SELECT * FROM sovereign_jail_positions")
+        q.onSuccess = function(_, data)
+            if data then
+                for _, row in ipairs(data) do
+                    table.insert(Sovereign.JailPositions, {
+                        pos = Vector(tonumber(row.pos_x), tonumber(row.pos_y), tonumber(row.pos_z)),
+                        ang = Angle(0, tonumber(row.ang_y), 0)
+                    })
+                end
+            end
+        end
+        q.onError = function(_, err) print("[Sovereign] MySQL jail position load error: " .. err) end
+        q:start()
     end
     
     return positions

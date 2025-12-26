@@ -237,7 +237,7 @@ Sovereign.RegisterCommand("stopsound", { "admin", "mod" }, function(admin, args)
     
     -- If no target specified, stop sounds for admin
     if not targetName then
-        admin:ConCommand("stopsound")
+        admin:SendLua("RunConsoleCommand('stopsound')")
         Sovereign.NotifyPlayer(admin, "Stopped all sounds for you")
         return
     end
@@ -249,7 +249,7 @@ Sovereign.RegisterCommand("stopsound", { "admin", "mod" }, function(admin, args)
         return
     end
     
-    target:ConCommand("stopsound")
+    target:SendLua("RunConsoleCommand('stopsound')")
     Sovereign.NotifyPlayer(admin, "Stopped all sounds for " .. target:Nick())
     Sovereign.NotifyPlayer(target, "All sounds stopped by " .. admin:Nick())
 end, "Stop all sounds for a player")
@@ -260,7 +260,7 @@ Sovereign.RegisterCommand("cleardecals", { "admin", "mod" }, function(admin, arg
     
     -- If no target specified, clear decals for admin
     if not targetName then
-        admin:ConCommand("r_cleardecals")
+        admin:SendLua("RunConsoleCommand('r_cleardecals')")
         Sovereign.NotifyPlayer(admin, "Cleared decals for you")
         return
     end
@@ -272,7 +272,7 @@ Sovereign.RegisterCommand("cleardecals", { "admin", "mod" }, function(admin, arg
         return
     end
     
-    target:ConCommand("r_cleardecals")
+    target:SendLua("RunConsoleCommand('r_cleardecals')")
     Sovereign.NotifyPlayer(admin, "Cleared decals for " .. target:Nick())
     Sovereign.NotifyPlayer(target, "Decals cleared by " .. admin:Nick())
 end, "Clear decals for a player")

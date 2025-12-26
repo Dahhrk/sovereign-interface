@@ -136,8 +136,9 @@ Sovereign.RegisterCommand("jail", { "admin", "mod" }, function(admin, args)
     end
     
     -- Create jail prop
+    local jailModel = Sovereign.Config.JailModel or "models/props_phx/construct/metal_plate1.mdl"
     local jailProp = ents.Create("prop_physics")
-    jailProp:SetModel("models/props_phx/construct/metal_plate1.mdl")
+    jailProp:SetModel(jailModel)
     jailProp:SetPos(target:GetPos())
     jailProp:Spawn()
     jailProp:SetCollisionGroup(COLLISION_GROUP_WORLD)

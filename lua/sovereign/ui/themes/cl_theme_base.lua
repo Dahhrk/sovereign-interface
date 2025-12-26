@@ -39,27 +39,28 @@ Sovereign.Theme.Spacing = {
 }
 
 -- Create fonts when UI is implemented
+-- Note: Using default system fonts for compatibility
 --[[
 surface.CreateFont(Sovereign.Theme.Fonts.Small, {
-    font = "Roboto",
+    font = "DermaDefault",
     size = 14,
     weight = 400
 })
 
 surface.CreateFont(Sovereign.Theme.Fonts.Normal, {
-    font = "Roboto",
+    font = "DermaDefault",
     size = 16,
     weight = 400
 })
 
 surface.CreateFont(Sovereign.Theme.Fonts.Large, {
-    font = "Roboto",
+    font = "DermaDefault",
     size = 20,
     weight = 500
 })
 
 surface.CreateFont(Sovereign.Theme.Fonts.Title, {
-    font = "Roboto",
+    font = "DermaDefaultBold",
     size = 24,
     weight = 700
 })

@@ -59,7 +59,8 @@ end
 function Sovereign.NotifyAdmins(message)
     if SERVER then
         for _, ply in ipairs(player.GetAll()) do
-            if ply:IsAdmin() or ply:IsSuperAdmin() then
+            -- Check if player has admin or higher role using the role system
+            if Sovereign.PlayerHasRole(ply, "mod") then
                 ply:ChatPrint("[Sovereign] " .. message)
             end
         end

@@ -63,9 +63,13 @@ Sovereign.RegisterCommand("slap", { "admin", "mod" }, function(admin, args)
         target:TakeDamage(damage, admin, admin)
     end
     
-    -- Apply upward velocity for slap effect
-    local velocity = target:GetVelocity()
-    target:SetVelocity(Vector(math.random(-100, 100), math.random(-100, 100), 200))
+    -- Apply upward velocity for slap effect (preserve horizontal velocity)
+    local currentVel = target:GetVelocity()
+    target:SetVelocity(Vector(
+        currentVel.x + math.random(-100, 100),
+        currentVel.y + math.random(-100, 100),
+        200
+    ))
     
     Sovereign.NotifyPlayer(admin, "You slapped " .. target:Nick() .. " for " .. damage .. " damage")
     Sovereign.NotifyPlayer(target, "You were slapped by " .. admin:Nick())

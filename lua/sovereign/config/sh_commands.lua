@@ -83,4 +83,18 @@ Sovereign.Config.Commands = {
     ["selldoor"] = { roles = { "admin" }, adminMode = false },
 }
 
+-- Default time durations for commands (in seconds)
+Sovereign.Config.Commands.DefaultTime = {
+    ban = 86400,    -- Default 1 day
+    jail = 300,     -- Default 5 minutes
+    setrank = 0     -- Default 0 for permanent rank
+}
+
+-- Default reasons for commands
+Sovereign.Config.Commands.DefaultReason = {
+    ban = "Violation of server rules.",
+    jail = "Disruptive behavior.",
+    setrank = "Rank change by admin."
+}
+
 print("[Sovereign] Centralized command configuration loaded.")

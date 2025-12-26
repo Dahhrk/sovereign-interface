@@ -7,11 +7,10 @@ Sovereign = Sovereign or {}
 -- Ban Command
 Sovereign.RegisterCommand("ban", { "superadmin", "admin" }, function(admin, args)
     local targetName = args[1]
-    local duration = tonumber(args[2]) or 0
-    local reason = table.concat(args, " ", 3) or "No reason given"
     
     if not targetName then
-        Sovereign.NotifyPlayer(admin, "Usage: !ban <player> <duration> [reason]")
+        Sovereign.NotifyPlayer(admin, "Usage: !ban <player> [time] [reason]")
+        Sovereign.NotifyPlayer(admin, "Time format: 10s, 5m, 2h, 1d (defaults to 1 day if not specified)")
         return
     end
     
@@ -21,6 +20,15 @@ Sovereign.RegisterCommand("ban", { "superadmin", "admin" }, function(admin, args
         return
     end
     
+    -- Remove target name from args and parse time and reason
+    local parseArgs = {}
+    for i = 2, #args do
+        table.insert(parseArgs, args[i])
+    end
+    
+    local timeInSeconds, reason = Sovereign.Helpers.ParseTimeAndReason(parseArgs, "ban")
+    local duration = math.floor(timeInSeconds / 60) -- Convert to minutes for database
+    
     -- Store ban in database
     if Sovereign.Database and Sovereign.Database.AddBan then
         Sovereign.Database.AddBan(target:SteamID(), target:Nick(), admin:SteamID(), admin:Nick(), duration, reason)
@@ -28,8 +36,8 @@ Sovereign.RegisterCommand("ban", { "superadmin", "admin" }, function(admin, args
     
     -- Kick the player
     local banMessage = "Banned by " .. admin:Nick()
-    if duration > 0 then
-        banMessage = banMessage .. " for " .. duration .. " minutes"
+    if timeInSeconds > 0 then
+        banMessage = banMessage .. " for " .. Sovereign.Helpers.FormatTime(timeInSeconds)
     else
         banMessage = banMessage .. " permanently"
     end
@@ -39,8 +47,8 @@ Sovereign.RegisterCommand("ban", { "superadmin", "admin" }, function(admin, args
     
     -- Notify admins
     local notifyMessage = admin:Nick() .. " banned " .. target:Nick()
-    if duration > 0 then
-        notifyMessage = notifyMessage .. " for " .. duration .. " minutes"
+    if timeInSeconds > 0 then
+        notifyMessage = notifyMessage .. " for " .. Sovereign.Helpers.FormatTime(timeInSeconds)
     else
         notifyMessage = notifyMessage .. " permanently"
     end
@@ -137,11 +145,10 @@ end, "Kill a player instantly")
 -- Ban by ID Command
 Sovereign.RegisterCommand("banid", { "superadmin", "admin" }, function(admin, args)
     local steamID = args[1]
-    local duration = tonumber(args[2]) or 0
-    local reason = table.concat(args, " ", 3) or "No reason given"
     
     if not steamID then
-        Sovereign.NotifyPlayer(admin, "Usage: !banid <steamid> <duration> [reason]")
+        Sovereign.NotifyPlayer(admin, "Usage: !banid <steamid> [time] [reason]")
+        Sovereign.NotifyPlayer(admin, "Time format: 10s, 5m, 2h, 1d (defaults to 1 day if not specified)")
         return
     end
     
@@ -150,6 +157,15 @@ Sovereign.RegisterCommand("banid", { "superadmin", "admin" }, function(admin, ar
         Sovereign.NotifyPlayer(admin, "Invalid SteamID format")
         return
     end
+    
+    -- Remove steamID from args and parse time and reason
+    local parseArgs = {}
+    for i = 2, #args do
+        table.insert(parseArgs, args[i])
+    end
+    
+    local timeInSeconds, reason = Sovereign.Helpers.ParseTimeAndReason(parseArgs, "ban")
+    local duration = math.floor(timeInSeconds / 60) -- Convert to minutes for database
     
     -- Store ban in database
     if Sovereign.Database and Sovereign.Database.AddBan then
@@ -160,8 +176,8 @@ Sovereign.RegisterCommand("banid", { "superadmin", "admin" }, function(admin, ar
     for _, ply in ipairs(player.GetAll()) do
         if ply:SteamID() == steamID then
             local banMessage = "Banned by " .. admin:Nick()
-            if duration > 0 then
-                banMessage = banMessage .. " for " .. duration .. " minutes"
+            if timeInSeconds > 0 then
+                banMessage = banMessage .. " for " .. Sovereign.Helpers.FormatTime(timeInSeconds)
             else
                 banMessage = banMessage .. " permanently"
             end
@@ -172,8 +188,8 @@ Sovereign.RegisterCommand("banid", { "superadmin", "admin" }, function(admin, ar
     end
     
     local notifyMessage = admin:Nick() .. " banned SteamID " .. steamID
-    if duration > 0 then
-        notifyMessage = notifyMessage .. " for " .. duration .. " minutes"
+    if timeInSeconds > 0 then
+        notifyMessage = notifyMessage .. " for " .. Sovereign.Helpers.FormatTime(timeInSeconds)
     else
         notifyMessage = notifyMessage .. " permanently"
     end
@@ -183,12 +199,15 @@ Sovereign.RegisterCommand("banid", { "superadmin", "admin" }, function(admin, ar
 end, "Ban a player by SteamID")
 
 -- Set Rank Command
+Sovereign.TemporaryRanks = Sovereign.TemporaryRanks or {}
+
 Sovereign.RegisterCommand("setrank", { "superadmin" }, function(admin, args)
     local targetName = args[1]
     local rank = args[2]
     
     if not targetName or not rank then
-        Sovereign.NotifyPlayer(admin, "Usage: !setrank <player> <rank>")
+        Sovereign.NotifyPlayer(admin, "Usage: !setrank <player> <rank> [time] [reason]")
+        Sovereign.NotifyPlayer(admin, "Time format: 10s, 5m, 2h, 1d (permanent if not specified)")
         return
     end
     
@@ -198,12 +217,49 @@ Sovereign.RegisterCommand("setrank", { "superadmin" }, function(admin, args)
         return
     end
     
+    -- Remove target name and rank from args and parse time and reason
+    local parseArgs = {}
+    for i = 3, #args do
+        table.insert(parseArgs, args[i])
+    end
+    
+    local timeInSeconds, reason = Sovereign.Helpers.ParseTimeAndReason(parseArgs, "setrank")
+    
+    -- Store previous rank for restoration
+    local previousRank = target:GetUserGroup()
+    
     -- Set usergroup
     target:SetUserGroup(rank)
     
-    Sovereign.NotifyPlayer(admin, "Set " .. target:Nick() .. "'s rank to " .. rank)
-    Sovereign.NotifyPlayer(target, "Your rank was set to " .. rank .. " by " .. admin:Nick())
-    Sovereign.NotifyAdmins(admin:Nick() .. " set " .. target:Nick() .. "'s rank to " .. rank)
+    -- Notify based on whether it's temporary or permanent
+    if timeInSeconds > 0 then
+        Sovereign.NotifyPlayer(admin, "Set " .. target:Nick() .. "'s rank to " .. rank .. " for " .. Sovereign.Helpers.FormatTime(timeInSeconds) .. ". Reason: " .. reason)
+        Sovereign.NotifyPlayer(target, "Your rank was set to " .. rank .. " by " .. admin:Nick() .. " for " .. Sovereign.Helpers.FormatTime(timeInSeconds) .. ". Reason: " .. reason)
+        Sovereign.NotifyAdmins(admin:Nick() .. " set " .. target:Nick() .. "'s rank to " .. rank .. " for " .. Sovereign.Helpers.FormatTime(timeInSeconds) .. ". Reason: " .. reason)
+        
+        -- Store temporary rank info
+        local steamID = target:SteamID()
+        Sovereign.TemporaryRanks[steamID] = {
+            previousRank = previousRank,
+            expiresAt = CurTime() + timeInSeconds,
+            player = target
+        }
+        
+        -- Schedule rank reversion
+        timer.Simple(timeInSeconds, function()
+            if IsValid(target) and Sovereign.TemporaryRanks[steamID] then
+                local rankInfo = Sovereign.TemporaryRanks[steamID]
+                target:SetUserGroup(rankInfo.previousRank)
+                Sovereign.NotifyPlayer(target, "Your temporary rank has expired. Reverted to: " .. rankInfo.previousRank)
+                Sovereign.NotifyAdmins(target:Nick() .. "'s temporary rank expired. Reverted to: " .. rankInfo.previousRank)
+                Sovereign.TemporaryRanks[steamID] = nil
+            end
+        end)
+    else
+        Sovereign.NotifyPlayer(admin, "Set " .. target:Nick() .. "'s rank to " .. rank .. ". Reason: " .. reason)
+        Sovereign.NotifyPlayer(target, "Your rank was set to " .. rank .. " by " .. admin:Nick() .. ". Reason: " .. reason)
+        Sovereign.NotifyAdmins(admin:Nick() .. " set " .. target:Nick() .. "'s rank to " .. rank .. ". Reason: " .. reason)
+    end
 end, "Set a player's rank/usergroup")
 
 -- Set Rank by ID Command
@@ -267,5 +323,13 @@ Sovereign.RegisterCommand("removeuser", { "superadmin" }, function(admin, args)
     Sovereign.NotifyPlayer(admin, "Removed user data for SteamID: " .. steamID)
     Sovereign.NotifyAdmins(admin:Nick() .. " removed user data for " .. steamID)
 end, "Remove a user from the database")
+
+-- Clean up temporary ranks on player disconnect
+hook.Add("PlayerDisconnected", "Sovereign_TemporaryRank_Cleanup", function(ply)
+    local steamID = ply:SteamID()
+    if Sovereign.TemporaryRanks[steamID] then
+        Sovereign.TemporaryRanks[steamID] = nil
+    end
+end)
 
 print("[Sovereign] Moderation commands loaded.")

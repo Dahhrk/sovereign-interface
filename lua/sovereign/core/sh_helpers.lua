@@ -133,4 +133,51 @@ function Sovereign.Helpers.SteamIDToSteamID64(steamid)
     return util.SteamIDTo64(steamid)
 end
 
+-- Parse time and reason from command arguments
+-- Returns: time (in seconds), reason (string), remaining args (table)
+function Sovereign.Helpers.ParseTimeAndReason(args, command)
+    Sovereign = Sovereign or {}
+    Sovereign.Config = Sovereign.Config or {}
+    Sovereign.Config.Commands = Sovereign.Config.Commands or {}
+    
+    -- Get defaults from config
+    local defaultTimes = Sovereign.Config.Commands.DefaultTime or {}
+    local defaultReasons = Sovereign.Config.Commands.DefaultReason or {}
+    
+    local time = defaultTimes[command] or 0
+    local reason = defaultReasons[command] or "No reason provided."
+    
+    -- Make a copy of args to avoid modifying the original
+    local argsCopy = {}
+    for i, v in ipairs(args) do
+        argsCopy[i] = v
+    end
+    
+    -- Check if the last argument is a time format (e.g., "10m", "1h", "2d")
+    if #argsCopy > 0 and argsCopy[#argsCopy]:match("^%d+[smhd]$") then
+        local timeArg = table.remove(argsCopy)
+        local unit = timeArg:sub(-1)
+        local value = tonumber(timeArg:sub(1, -2))
+        
+        if value then
+            if unit == "s" then
+                time = value
+            elseif unit == "m" then
+                time = value * 60
+            elseif unit == "h" then
+                time = value * 3600
+            elseif unit == "d" then
+                time = value * 86400
+            end
+        end
+    end
+    
+    -- If there are remaining args, use them as the reason
+    if #argsCopy > 0 then
+        reason = table.concat(argsCopy, " ")
+    end
+    
+    return time, reason, argsCopy
+end
+
 print("[Sovereign] Helper utilities loaded.")

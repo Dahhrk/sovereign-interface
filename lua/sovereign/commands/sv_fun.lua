@@ -122,10 +122,10 @@ Sovereign.JailedPlayers = Sovereign.JailedPlayers or {}
 
 Sovereign.RegisterCommand("jail", { "admin", "mod" }, function(admin, args)
     local targetName = args[1]
-    local duration = tonumber(args[2]) or 0
     
     if not targetName then
-        Sovereign.NotifyPlayer(admin, "Usage: !jail <player> [duration]")
+        Sovereign.NotifyPlayer(admin, "Usage: !jail <player> [time] [reason]")
+        Sovereign.NotifyPlayer(admin, "Time format: 10s, 5m, 2h, 1d (defaults to 5 minutes if not specified)")
         return
     end
     
@@ -134,6 +134,14 @@ Sovereign.RegisterCommand("jail", { "admin", "mod" }, function(admin, args)
         Sovereign.NotifyPlayer(admin, "Player not found: " .. targetName)
         return
     end
+    
+    -- Remove target name from args and parse time and reason
+    local parseArgs = {}
+    for i = 2, #args do
+        table.insert(parseArgs, args[i])
+    end
+    
+    local timeInSeconds, reason = Sovereign.Helpers.ParseTimeAndReason(parseArgs, "jail")
     
     -- Create jail prop
     local jailModel = Sovereign.Config.JailModel or "models/props_phx/construct/metal_plate1.mdl"
@@ -148,18 +156,20 @@ Sovereign.RegisterCommand("jail", { "admin", "mod" }, function(admin, args)
     Sovereign.JailedPlayers[target:SteamID()] = {
         entity = jailProp,
         time = CurTime(),
-        duration = duration
+        duration = timeInSeconds,
+        reason = reason
     }
     
     -- Freeze the player
     target:Freeze(true)
     
-    if duration > 0 then
-        Sovereign.NotifyPlayer(admin, "Jailed " .. target:Nick() .. " for " .. duration .. " seconds")
-        Sovereign.NotifyPlayer(target, "You have been jailed by " .. admin:Nick() .. " for " .. duration .. " seconds")
+    if timeInSeconds > 0 then
+        Sovereign.NotifyPlayer(admin, "Jailed " .. target:Nick() .. " for " .. Sovereign.Helpers.FormatTime(timeInSeconds) .. ". Reason: " .. reason)
+        Sovereign.NotifyPlayer(target, "You have been jailed by " .. admin:Nick() .. " for " .. Sovereign.Helpers.FormatTime(timeInSeconds) .. ". Reason: " .. reason)
+        Sovereign.NotifyAdmins(admin:Nick() .. " jailed " .. target:Nick() .. " for " .. Sovereign.Helpers.FormatTime(timeInSeconds) .. ". Reason: " .. reason)
         
         -- Auto-unjail after duration
-        timer.Simple(duration, function()
+        timer.Simple(timeInSeconds, function()
             if IsValid(target) and Sovereign.JailedPlayers[target:SteamID()] then
                 local jailData = Sovereign.JailedPlayers[target:SteamID()]
                 if IsValid(jailData.entity) then
@@ -168,11 +178,13 @@ Sovereign.RegisterCommand("jail", { "admin", "mod" }, function(admin, args)
                 target:Freeze(false)
                 Sovereign.JailedPlayers[target:SteamID()] = nil
                 Sovereign.NotifyPlayer(target, "You have been automatically unjailed")
+                Sovereign.NotifyAdmins(target:Nick() .. " has been automatically unjailed")
             end
         end)
     else
-        Sovereign.NotifyPlayer(admin, "Jailed " .. target:Nick() .. " indefinitely")
-        Sovereign.NotifyPlayer(target, "You have been jailed by " .. admin:Nick())
+        Sovereign.NotifyPlayer(admin, "Jailed " .. target:Nick() .. " indefinitely. Reason: " .. reason)
+        Sovereign.NotifyPlayer(target, "You have been jailed by " .. admin:Nick() .. ". Reason: " .. reason)
+        Sovereign.NotifyAdmins(admin:Nick() .. " jailed " .. target:Nick() .. " indefinitely. Reason: " .. reason)
     end
 end, "Jail a player")
 

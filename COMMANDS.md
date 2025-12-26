@@ -119,6 +119,8 @@ Format: `!command <required_argument> [optional_argument]`
 
 ## Moderation Commands
 
+**Note:** When `RestrictCommands` is enabled in `sh_adminmode.lua`, most moderation commands require Admin Mode to be active. Use `!adminmode` to toggle Admin Mode before using these commands.
+
 ### ban
 **Usage:** `!ban <player> <duration> [reason]`  
 **Permission:** superadmin, admin  
@@ -396,10 +398,13 @@ Roles inherit permissions from lower roles (e.g., admin can use all mod commands
 ### adminmode
 **Usage:** `!adminmode`  
 **Permission:** superadmin, admin  
-**Description:** Toggle admin mode on/off. Switches to admin model, enables god mode, and adjusts stats.  
+**Description:** Toggle admin mode on/off. Switches to admin model, enables god mode, and adjusts stats. When Admin Mode command restrictions are enabled, certain sensitive commands (like ban, kick, warn) require Admin Mode to be active.  
 **Example:** `!adminmode`
 
-**Note:** Can also be toggled with F2 key (configurable).
+**Note:** 
+- Can also be toggled with F2 key (configurable).
+- When `RestrictCommands` is enabled in `sh_adminmode.lua`, you must enable Admin Mode to use restricted commands.
+- Provides audio feedback when entering/exiting (configurable sounds).
 
 ---
 

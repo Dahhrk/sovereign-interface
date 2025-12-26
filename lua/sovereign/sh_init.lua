@@ -8,6 +8,7 @@ Sovereign = Sovereign or {}
 include("sovereign/config/sh_config.lua")         -- Main configuration
 include("sovereign/config/sh_roles.lua")          -- Role management
 include("sovereign/config/sh_adminmode.lua")      -- Admin mode configuration
+include("sovereign/config/sh_commands.lua")       -- Command configuration
 include("sovereign/config/sh_limits.lua")         -- Sandbox limits
 include("sovereign/config/sh_localization.lua")   -- Localization support
 

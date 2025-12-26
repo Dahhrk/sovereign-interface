@@ -19,6 +19,8 @@ if SERVER then
     include("sovereign/commands/sv_moderation.lua") -- Moderation commands
     include("sovereign/commands/sv_teleport.lua")   -- Teleport commands
     include("sovereign/commands/sv_utility.lua")    -- Utility commands
+    include("sovereign/commands/sv_chat.lua")       -- Chat commands
+    include("sovereign/commands/sv_darkrp.lua")     -- DarkRP commands
 end
 
 -- Include client-side modules

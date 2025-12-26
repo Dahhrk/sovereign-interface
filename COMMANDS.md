@@ -21,6 +21,18 @@ Format: `!command <required_argument> [optional_argument]`
 **Description:** Unfreeze a frozen player.  
 **Example:** `!unfreeze John`
 
+### jail
+**Usage:** `!jail <player> [duration]`  
+**Permission:** admin, mod  
+**Description:** Jail a player with a physical jail prop. Duration in seconds (0 = permanent).  
+**Example:** `!jail John 60`
+
+### unjail
+**Usage:** `!unjail <player>`  
+**Permission:** admin, mod  
+**Description:** Unjail a jailed player.  
+**Example:** `!unjail John`
+
 ### slap
 **Usage:** `!slap <player> [damage]`  
 **Permission:** admin, mod  
@@ -39,6 +51,70 @@ Format: `!command <required_argument> [optional_argument]`
 **Description:** Extinguish a burning player.  
 **Example:** `!extinguish John`
 
+### exitvehicle
+**Usage:** `!exitvehicle <player>`  
+**Permission:** admin, mod  
+**Description:** Force a player to exit their vehicle.  
+**Example:** `!exitvehicle John`
+
+### giveammo
+**Usage:** `!giveammo <player> <ammotype> [amount]`  
+**Permission:** admin  
+**Description:** Give ammunition to a player. Default amount is 100.  
+**Example:** `!giveammo John pistol 50`
+
+### setmodel
+**Usage:** `!setmodel <player> <model>`  
+**Permission:** admin  
+**Description:** Change a player's model.  
+**Example:** `!setmodel John models/player/police.mdl`
+
+### scale
+**Usage:** `!scale <player> <scale>`  
+**Permission:** admin  
+**Description:** Change a player's size scale.  
+**Example:** `!scale John 2`
+
+---
+
+## Chat Commands
+
+### pm
+**Usage:** `!pm <player> <message>`  
+**Permission:** admin, mod  
+**Description:** Send a private message to a player.  
+**Example:** `!pm John Please follow server rules`
+
+### asay
+**Usage:** `!asay <message>`  
+**Permission:** admin, mod  
+**Description:** Send a message to all online admins.  
+**Example:** `!asay Need help with player report`
+
+### mute
+**Usage:** `!mute <player> [duration]`  
+**Permission:** admin, mod  
+**Description:** Mute a player's voice chat. Duration in seconds (0 = permanent).  
+**Example:** `!mute John 60`
+
+### unmute
+**Usage:** `!unmute <player>`  
+**Permission:** admin, mod  
+**Description:** Unmute a player's voice chat.  
+**Example:** `!unmute John`
+
+### gag
+**Usage:** `!gag <player> [duration]`  
+**Permission:** admin, mod  
+**Description:** Gag a player's text chat. Duration in seconds (0 = permanent).  
+**Example:** `!gag John 60`
+
+### ungag
+**Usage:** `!ungag <player>`  
+**Permission:** admin, mod  
+**Description:** Ungag a player's text chat.  
+**Example:** `!ungag John`
+
 ---
 
 ## Moderation Commands
@@ -48,6 +124,12 @@ Format: `!command <required_argument> [optional_argument]`
 **Permission:** superadmin, admin  
 **Description:** Ban a player from the server. Duration in minutes (0 = permanent).  
 **Example:** `!ban John 1440 Griefing` (24 hour ban)
+
+### banid
+**Usage:** `!banid <steamid> <duration> [reason]`  
+**Permission:** superadmin, admin  
+**Description:** Ban a player by SteamID directly. Duration in minutes (0 = permanent).  
+**Example:** `!banid STEAM_0:1:12345678 1440 Alt account`
 
 ### unban
 **Usage:** `!unban <steamid>`  
@@ -72,6 +154,24 @@ Format: `!command <required_argument> [optional_argument]`
 **Permission:** admin  
 **Description:** Instantly kill a player.  
 **Example:** `!slay John`
+
+### setrank
+**Usage:** `!setrank <player> <rank>`  
+**Permission:** superadmin  
+**Description:** Set a player's rank/usergroup.  
+**Example:** `!setrank John admin`
+
+### setrankid
+**Usage:** `!setrankid <steamid> <rank>`  
+**Permission:** superadmin  
+**Description:** Set a player's rank by SteamID (works offline).  
+**Example:** `!setrankid STEAM_0:1:12345678 mod`
+
+### removeuser
+**Usage:** `!removeuser <steamid>`  
+**Permission:** superadmin  
+**Description:** Remove a user's data from the database.  
+**Example:** `!removeuser STEAM_0:1:12345678`
 
 ---
 
@@ -165,6 +265,106 @@ Format: `!command <required_argument> [optional_argument]`
 **Description:** Respawn a dead player.  
 **Example:** `!respawn John`
 
+### stopsound
+**Usage:** `!stopsound [player]`  
+**Permission:** admin, mod  
+**Description:** Stop all sounds for yourself or another player.  
+**Example:** `!stopsound` or `!stopsound John`
+
+### cleardecals
+**Usage:** `!cleardecals [player]`  
+**Permission:** admin, mod  
+**Description:** Clear all decals for yourself or another player.  
+**Example:** `!cleardecals` or `!cleardecals John`
+
+### map
+**Usage:** `!map <mapname>`  
+**Permission:** superadmin, admin  
+**Description:** Change the server to a different map.  
+**Example:** `!map gm_construct`
+
+### maprestart
+**Usage:** `!maprestart [delay]`  
+**Permission:** superadmin, admin  
+**Description:** Restart the current map with optional delay in seconds (default: 3).  
+**Example:** `!maprestart 5`
+
+### mapreset
+**Usage:** `!mapreset`  
+**Permission:** superadmin, admin  
+**Description:** Reset all map entities (cleanup).  
+**Example:** `!mapreset`
+
+### give
+**Usage:** `!give <player> <weapon/entity>`  
+**Permission:** admin  
+**Description:** Give a weapon or entity to a player.  
+**Example:** `!give John weapon_crowbar`
+
+### time
+**Usage:** `!time <player>`  
+**Permission:** admin, mod  
+**Description:** Show a player's current session playtime.  
+**Example:** `!time John`
+
+### totaltime
+**Usage:** `!totaltime <player>`  
+**Permission:** admin, mod  
+**Description:** Show a player's total playtime on the server.  
+**Example:** `!totaltime John`
+
+---
+
+## DarkRP Commands
+
+### arrest
+**Usage:** `!arrest <player> [duration]`  
+**Permission:** admin, mod  
+**Description:** Arrest a player (DarkRP only). Duration in seconds (default: 120).  
+**Example:** `!arrest John 60`
+
+### unarrest
+**Usage:** `!unarrest <player>`  
+**Permission:** admin, mod  
+**Description:** Unarrest a player (DarkRP only).  
+**Example:** `!unarrest John`
+
+### setmoney
+**Usage:** `!setmoney <player> <amount>`  
+**Permission:** admin  
+**Description:** Set a player's money (DarkRP only).  
+**Example:** `!setmoney John 5000`
+
+### addmoney
+**Usage:** `!addmoney <player> <amount>`  
+**Permission:** admin  
+**Description:** Add money to a player (DarkRP only).  
+**Example:** `!addmoney John 1000`
+
+### selldoor
+**Usage:** `!selldoor <player>`  
+**Permission:** admin, mod  
+**Description:** Sell the door you're looking at owned by a player (DarkRP only).  
+**Example:** `!selldoor John`
+
+### sellall
+**Usage:** `!sellall <player>`  
+**Permission:** admin, mod  
+**Description:** Sell all doors owned by a player (DarkRP only).  
+**Example:** `!sellall John`
+
+### setjailpos
+**Usage:** `!setjailpos`  
+**Permission:** superadmin, admin  
+**Description:** Set the jail spawn position at your current location.  
+**Example:** `!setjailpos`
+
+### addjailpos
+**Usage:** `!addjailpos`  
+**Permission:** superadmin, admin  
+**Description:** Add an additional jail spawn position at your current location.  
+**Example:** `!addjailpos`
+
 ---
 
 ## Permission Levels
@@ -172,7 +372,7 @@ Format: `!command <required_argument> [optional_argument]`
 Commands are restricted by role with inheritance:
 
 - **superadmin** - All commands
-- **admin** - All commands except unban
+- **admin** - All commands except some management commands
 - **mod** - Basic moderation and fun commands
 - **user** - No admin commands
 
@@ -187,3 +387,4 @@ Roles inherit permissions from lower roles (e.g., admin can use all mod commands
 3. Multiple word reasons don't need quotes: `!ban John 60 Being rude in chat`
 4. Use `!return` after teleporting to go back to your original position
 5. Some commands work on yourself if no player is specified (e.g., `!noclip`)
+6. DarkRP commands only work when DarkRP is installed on the server

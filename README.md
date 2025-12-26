@@ -6,28 +6,46 @@ A lightweight, modular, command-based admin system for Garry's Mod servers.
 
 ### Command Categories
 
-#### Fun Commands
+#### Fun Commands (11 commands)
 - `!freeze <player>` - Freeze a player in place
 - `!unfreeze <player>` - Unfreeze a frozen player
+- `!jail <player> [duration]` - Jail a player with a physical jail prop
+- `!unjail <player>` - Unjail a jailed player
 - `!slap <player> [damage]` - Slap a player with optional damage
 - `!ignite <player> [duration]` - Set a player on fire
 - `!extinguish <player>` - Extinguish a burning player
+- `!exitvehicle <player>` - Force a player to exit their vehicle
+- `!giveammo <player> <type> [amount]` - Give ammunition to a player
+- `!setmodel <player> <model>` - Change a player's model
+- `!scale <player> <scale>` - Change a player's size
 
-#### Moderation Commands
+#### Chat Commands (6 commands)
+- `!pm <player> <message>` - Send a private message to a player
+- `!asay <message>` - Send a message to all admins
+- `!mute <player> [duration]` - Mute a player's voice chat
+- `!unmute <player>` - Unmute a player's voice chat
+- `!gag <player> [duration]` - Gag a player's text chat
+- `!ungag <player>` - Ungag a player's text chat
+
+#### Moderation Commands (8 commands)
 - `!ban <player> <duration> [reason]` - Ban a player from the server
+- `!banid <steamid> <duration> [reason]` - Ban a player by SteamID
 - `!unban <steamid>` - Unban a player by SteamID
 - `!kick <player> [reason]` - Kick a player from the server
 - `!warn <player> [reason]` - Warn a player
 - `!slay <player>` - Kill a player instantly
+- `!setrank <player> <rank>` - Set a player's rank/usergroup
+- `!setrankid <steamid> <rank>` - Set rank by SteamID (works offline)
+- `!removeuser <steamid>` - Remove a user from the database
 
-#### Teleportation Commands
+#### Teleportation Commands (5 commands)
 - `!goto <player>` - Teleport to a player
 - `!bring <player>` - Bring a player to you
 - `!return [player]` - Return to previous location or return a player
 - `!tp <x> <y> <z>` - Teleport to specific coordinates
 - `!send <player> <destination>` - Send one player to another
 
-#### Utility Commands
+#### Utility Commands (17 commands)
 - `!noclip [player]` - Toggle noclip mode
 - `!cloak [player]` - Make a player invisible
 - `!uncloak [player]` - Make a cloaked player visible
@@ -37,6 +55,26 @@ A lightweight, modular, command-based admin system for Garry's Mod servers.
 - `!armor <player> [amount]` - Set a player's armor
 - `!strip <player>` - Remove all weapons from a player
 - `!respawn <player>` - Respawn a player
+- `!stopsound [player]` - Stop all sounds for a player
+- `!cleardecals [player]` - Clear decals for a player
+- `!map <mapname>` - Change the server map
+- `!maprestart [delay]` - Restart the current map
+- `!mapreset` - Reset all map entities
+- `!give <player> <weapon/entity>` - Give a weapon or entity
+- `!time <player>` - Show player's current session playtime
+- `!totaltime <player>` - Show player's total playtime
+
+#### DarkRP Commands (8 commands)
+- `!arrest <player> [duration]` - Arrest a player
+- `!unarrest <player>` - Unarrest a player
+- `!setmoney <player> <amount>` - Set a player's money
+- `!addmoney <player> <amount>` - Add money to a player
+- `!selldoor <player>` - Sell a player's door
+- `!sellall <player>` - Sell all doors owned by a player
+- `!setjailpos` - Set jail spawn position
+- `!addjailpos` - Add jail spawn position
+
+**Total: 55+ Commands**
 
 ## Installation
 
@@ -70,7 +108,9 @@ lua/
     │   ├── sv_fun.lua                 # Fun commands
     │   ├── sv_moderation.lua          # Moderation commands
     │   ├── sv_teleport.lua            # Teleportation commands
-    │   └── sv_utility.lua             # Utility commands
+    │   ├── sv_utility.lua             # Utility commands
+    │   ├── sv_chat.lua                # Chat commands
+    │   └── sv_darkrp.lua              # DarkRP-specific commands
     ├── storage/                       # Database handling
     │   └── sv_database.lua            # SQLite/MySQL wrapper
     └── ui/                            # Future UI components
@@ -93,6 +133,9 @@ Sovereign supports both SQLite (default) and MySQL databases:
 - Stores bans with duration and reason
 - Logs all command executions
 - Records player warnings
+- Tracks player playtime
+- Stores user ranks and permissions
+- Saves jail spawn positions
 - Automatic ban expiration
 
 ## Future Features

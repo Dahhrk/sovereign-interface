@@ -242,7 +242,7 @@ if SERVER then
         -- Check for silent command prefix
         if string.sub(text, 1, #silentPrefix) == silentPrefix then
             -- Check if player has permission for silent commands
-            if Sovereign.Config.Chat and Sovereign.Config.Chat.CanUseSilentCommands then
+            if Sovereign.Config.Chat and Sovereign.Config.Chat.CanUseSilentCommands and next(Sovereign.Config.Chat.CanUseSilentCommands) then
                 local hasPermission = false
                 for _, role in ipairs(Sovereign.Config.Chat.CanUseSilentCommands) do
                     if Sovereign.PlayerHasRole(ply, role) then

@@ -8,6 +8,7 @@ All configuration files are located in `lua/sovereign/config/`:
 - `sh_config.lua` - Main settings
 - `sh_adminmode.lua` - Admin mode configuration
 - `sh_commands.lua` - Centralized command permissions and restrictions
+- `sh_chat.lua` - Chat system configuration (admin chat, silent commands, logs)
 - `sh_limits.lua` - Sandbox spawn limits
 - `sh_localization.lua` - Multi-language support
 - `sh_roles.lua` - Role hierarchy and permissions
@@ -506,6 +507,93 @@ Then set:
 ```lua
 Sovereign.Config.Language.Current = "german"
 ```
+
+---
+
+## Chat System Configuration
+
+Edit `lua/sovereign/config/sh_chat.lua` to customize the admin chat system, silent commands, and action logs.
+
+### Admin Chat Prefix
+
+```lua
+Sovereign.Config.Chat.AdminChatPrefix = "@"
+```
+
+Set the prefix that staff members use to send messages in admin-only chat. 
+
+**Usage Example:**
+```
+@ Hello team, need backup at spawn!
+```
+
+This message will only be visible to players with `mod` role or higher.
+
+### Silent Command Prefix
+
+```lua
+Sovereign.Config.Chat.SilentCommandPrefix = "$"
+```
+
+Set the prefix for executing commands silently. Silent commands are only visible to the person who executed them.
+
+**Usage Example:**
+```
+$ban John 1h Griefing
+```
+
+This ban will execute without notifying other admins.
+
+### Admin Action Prefix
+
+```lua
+Sovereign.Config.Chat.AdminActionPrefix = "[Admin Action]"
+```
+
+The prefix shown before admin action logs that are visible to staff.
+
+### Chat Colors
+
+```lua
+Sovereign.Config.Chat.Colors = {
+    AdminChat = Color(255, 200, 0),      -- Bright orange
+    AdminAction = Color(0, 200, 255),    -- Bright cyan
+    SilentCommand = Color(100, 100, 100) -- Gray (only visible to issuer)
+}
+```
+
+Customize the colors for different types of admin messages.
+
+### Admin Logs Visibility
+
+```lua
+Sovereign.Config.Chat.AdminLogsVisibleToStaff = true
+```
+
+When enabled, all admin actions (bans, kicks, freezes, etc.) are automatically broadcast to all staff members.
+
+**Example Log Messages:**
+- `[Admin Action] Jane banned John for 1h. Reason: Griefing.`
+- `[Admin Action] Bob kicked Alice. Reason: AFK.`
+- `[Admin Action] Charlie froze Dave`
+
+Set to `false` to disable these notifications.
+
+### Silent Command Permissions
+
+```lua
+Sovereign.Config.Chat.CanUseSilentCommands = {
+    "superadmin",
+    "admin"
+}
+```
+
+Define which roles can execute commands silently. Only users with these roles can use the silent command prefix (`$` by default).
+
+**Use Cases for Silent Commands:**
+- Conducting undercover investigations
+- Testing punishments without alarming the target
+- Avoiding notification spam during mass actions
 
 ---
 

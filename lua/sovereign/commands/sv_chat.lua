@@ -187,4 +187,38 @@ hook.Add("PlayerSay", "Sovereign_GagCheck", function(ply, text)
     end
 end)
 
+-- Hook to handle Admin Chat with configurable prefix
+hook.Add("PlayerSay", "Sovereign_AdminChat", function(ply, text)
+    -- Check if chat config is available
+    if not Sovereign.Config.Chat or not Sovereign.Config.Chat.AdminChatPrefix then return end
+    
+    local prefix = Sovereign.Config.Chat.AdminChatPrefix
+    
+    -- Check if message starts with admin chat prefix
+    if text:sub(1, #prefix) == prefix then
+        -- Check if player has mod or higher role
+        if not Sovereign.PlayerHasRole(ply, "mod") then
+            Sovereign.NotifyPlayer(ply, "You don't have permission to use admin chat.")
+            return ""
+        end
+        
+        -- Extract message after prefix and trim whitespace
+        local message = string.Trim(text:sub(#prefix + 1))
+        
+        -- Don't send empty messages
+        if message == "" then
+            return ""
+        end
+        
+        -- Send to all staff members
+        for _, target in ipairs(player.GetAll()) do
+            if Sovereign.PlayerHasRole(target, "mod") then
+                target:ChatPrint("[Admin Chat] " .. ply:Nick() .. ": " .. message)
+            end
+        end
+        
+        return "" -- Suppress normal chat message
+    end
+end)
+
 print("[Sovereign] Chat commands loaded.")

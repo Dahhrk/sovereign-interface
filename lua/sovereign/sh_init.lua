@@ -11,6 +11,7 @@ include("sovereign/config/sh_adminmode.lua")      -- Admin mode configuration
 include("sovereign/config/sh_commands.lua")       -- Command configuration
 include("sovereign/config/sh_limits.lua")         -- Sandbox limits
 include("sovereign/config/sh_localization.lua")   -- Localization support
+include("sovereign/config/sh_chat.lua")           -- Chat configuration
 
 -- Include core modules
 include("sovereign/core/sh_helpers.lua")          -- Helper utilities  
